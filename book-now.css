@@ -1,0 +1,883 @@
+/* ============================================================
+   Book Now — Dhaankolhu Rasdhoo Island
+   Built on top of style.css. Reuses --teal / --brass / --ink /
+   --ivory / --paper / --ease-out. Adds the booking flow and the
+   "booking summary" ticket, plus the rise-up transition system.
+   ============================================================ */
+
+/* --- shared chrome copied from index.html's inline <style> so this page
+   works standalone (hamburger icon, mobile menu, footer-v2, header sizing) --- */
+#menu-trigger { position: relative !important; width: 40px !important; height: 40px !important; align-items: center !important; justify-content: center !important; }
+#menu-trigger .hamburger-icon { position: relative; width: 22px; height: 16px; display: inline-block; }
+#menu-trigger .hamburger-icon .line { position: absolute; left: 0; width: 100%; height: 2px; background: currentColor; border-radius: 2px; transition: transform .35s cubic-bezier(.65,0,.35,1), opacity .25s ease, top .35s cubic-bezier(.65,0,.35,1); }
+#menu-trigger .hamburger-icon .line1 { top: 0; }
+#menu-trigger .hamburger-icon .line2 { top: 7px; }
+#menu-trigger .hamburger-icon .line3 { top: 14px; }
+#menu-trigger[aria-expanded="true"] .hamburger-icon .line1 { top: 7px; transform: rotate(45deg); }
+#menu-trigger[aria-expanded="true"] .hamburger-icon .line2 { opacity: 0; transform: scaleX(0); }
+#menu-trigger[aria-expanded="true"] .hamburger-icon .line3 { top: 7px; transform: rotate(-45deg); }
+
+.mobile-menu { left: 0 !important; right: 0 !important; width: 100% !important; max-width: none !important; background: rgba(250,248,244,.96) !important; backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%); border: none !important; border-radius: 0 0 20px 20px !important; transform-origin: top center !important; transform: scaleY(0) !important; overflow: hidden; opacity: 0 !important; pointer-events: none !important; transition: transform .45s cubic-bezier(.65,0,.35,1) !important, opacity .35s ease !important; }
+.mobile-menu.is-open { transform: scaleY(1) !important; opacity: 1 !important; pointer-events: auto !important; overflow-y: auto; transition: transform .45s cubic-bezier(.34,1.2,.4,1) !important, opacity .3s ease !important; }
+.mobile-menu-inner { background: transparent !important; padding-top: 104px !important; padding-bottom: 8px !important; box-sizing: border-box; }
+.mobile-menu .eyebrow { color: #6b6355 !important; }
+.mobile-menu nav a { color: #12100d !important; border-bottom: 1px solid rgba(20,18,14,.12); background: transparent !important; }
+.mobile-menu nav a span { color: #8a8071 !important; }
+@media (hover: hover) and (pointer: fine) { .mobile-menu nav a:hover, .mobile-menu nav a:focus { background: rgba(20,18,14,.06) !important; color: #000 !important; } }
+.mobile-menu-divider { display: none; }
+.mobile-book-now { display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: left !important; align-self: stretch !important; margin: 0 !important; background: transparent !important; color: #12100d !important; border: none !important; border-top: 1px solid rgba(20,18,14,.12) !important; box-shadow: none !important; border-radius: 0 !important; padding: 16px 24px !important; font-family: "DM Sans", sans-serif; font-size: 1rem !important; font-weight: 400 !important; cursor: pointer; }
+@media (hover: hover) and (pointer: fine) { .mobile-book-now:hover { background: rgba(20,18,14,.06) !important; color: #000 !important; } }
+/* Keep header logo + close button dark and visible while the menu is open (same as index.html) */
+.site-shell:has(.mobile-menu.is-open) .site-header .brand-lockup,
+.site-shell:has(.mobile-menu.is-open) .site-header .brand-type,
+.site-shell:has(.mobile-menu.is-open) .site-header .brand-type strong { color: #12100d !important; opacity: 1 !important; visibility: visible !important; }
+.site-shell:has(.mobile-menu.is-open) .site-header .brand-mark { filter: brightness(0) !important; }
+/* explicit-class backup (JS-driven) in case :has() isn't supported */
+.site-header.is-menu-open .brand-lockup,
+.site-header.is-menu-open .brand-type,
+.site-header.is-menu-open .brand-type strong { color: #12100d !important; opacity: 1 !important; visibility: visible !important; }
+.site-header.is-menu-open .brand-mark { filter: brightness(0) !important; }
+.site-shell:has(.mobile-menu.is-open) .site-header { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1001 !important; background: rgba(250,248,244,.98) !important; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: none !important; opacity: 1 !important; visibility: visible !important; transform: none !important; }
+.site-shell:has(.mobile-menu.is-open) .mobile-menu { position: fixed !important; top: 0 !important; }
+.site-shell:has(.mobile-menu.is-open) .site-header #menu-trigger { color: #12100d !important; z-index: 1002 !important; position: relative !important; }
+.site-header:not(.is-scrolled) { min-height: 84px; padding-top: 1.1rem; padding-bottom: 1.1rem; }
+.site-header.is-scrolled { min-height: 106px; padding-top: .5rem; padding-bottom: .5rem; }
+@media (max-width: 640px) { .site-header:not(.is-scrolled) { min-height: 90px; } .site-header.is-scrolled { min-height: 90px; } }
+
+
+.site-footer-v2 { background: #ba8d5c; color: rgba(255,255,255,.82); padding: 64px 6vw 24px; font-family: "DM Sans", sans-serif; }
+.footer-v2-center { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center; }
+.footer-v2-brand-row { display: flex; align-items: center; }
+.footer-mark {
+  height: 168px;
+  width: auto;
+  display: block;
+}
+.footer-v2-tag { text-transform: uppercase; font-size: .7rem; letter-spacing: .08em; color: rgba(255,255,255,.68); margin-top: -14px; }
+.footer-v2-socials { display: flex; gap: 14px; }
+.footer-v2-social-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,.4); color: #fff; transition: background .2s ease, border-color .2s ease, color .2s ease, transform .2s ease; }
+.footer-v2-social-btn svg { width: 18px; height: 18px; }
+@media (hover: hover) and (pointer: fine) { .footer-v2-social-btn:hover { background: #fff; border-color: #fff; color: #ba8d5c; transform: translateY(-2px); } }
+.footer-v2-desc { font-size: .95rem; line-height: 1.75; color: rgba(255,255,255,.82); margin: 0; max-width: 640px; text-wrap: pretty; }
+.footer-v2-address, .footer-v2-contact { font-size: .95rem; line-height: 1.75; color: rgba(255,255,255,.82); margin: 0; max-width: 560px; }
+.footer-v2-contact a { color: #fff; text-decoration: none; transition: color .2s ease; }
+@media (hover: hover) and (pointer: fine) { .footer-v2-contact a:hover { color: rgba(255,255,255,.7); } }
+.footer-v2-bottom { max-width: 1280px; margin: 48px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.25); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: .82rem; color: rgba(255,255,255,.68); }
+.footer-v2-legal { display: flex; gap: 20px; }
+.footer-v2-legal a { color: rgba(255,255,255,.68); text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { .footer-v2-legal a:hover { color: #fff; } }
+@media (max-width: 560px) { .footer-v2-bottom { flex-direction: column; align-items: flex-start; } }
+
+/* ============================================================
+   Book Now — page-specific
+   ============================================================ */
+:root {
+  --bk-mist: var(--ocean-mist, #e8f4f4);
+  --bk-line: var(--ocean-line, #9bc5c7);
+}
+
+/* Prevent mobile browsers from treating quick successive taps (e.g. tap the
+   arrival field, then tap a date) as a double-tap-to-zoom gesture, which can
+   swallow the tap instead of registering it as a click. */
+#booking-flow button,
+#booking-flow [role="button"],
+#booking-flow a.bk-room-more-details {
+  touch-action: manipulation;
+}
+
+/* ---------- rise-up transition primitives ---------- */
+.rise { opacity: 0; transform: translateY(26px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); }
+.rise.is-up { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .rise, .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .bk-step { transition: none !important; }
+}
+
+/* ---------- hero ---------- */
+.bk-hero { position: relative; min-height: min(64vh, 560px); display: grid; place-items: center; isolation: isolate; color: #fff; overflow: hidden; background: var(--brass-deep, #8a6339); }
+.bk-hero-bg, .bk-hero-shade { position: absolute; inset: 0; }
+.bk-hero-bg { z-index: -2; background: url('https://images.unsplash.com/photo-1573843981267-be1999ff37cd?auto=format&fit=crop&w=1800&q=85') center/cover no-repeat; animation: bk-drift 18s ease-in-out infinite alternate; }
+@keyframes bk-drift { from { transform: scale(1.04); } to { transform: scale(1.14); } }
+.bk-hero-shade { z-index: -1; background: linear-gradient(180deg, rgba(4,19,22,.66) 0%, rgba(4,19,22,.5) 55%, rgba(4,19,22,.86) 100%); }
+.bk-hero-content { width: min(100% - 2.5rem, 760px); text-align: center; padding-top: 3rem; }
+.bk-crumb { display: flex; align-items: center; justify-content: center; gap: .5rem; margin-bottom: 1.3rem; font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.62); }
+.bk-crumb a { color: rgba(255,255,255,.85); transition: color .2s ease; }
+@media (hover: hover) and (pointer: fine) { .bk-crumb a:hover { color: #fff; } }
+.bk-hero-content h1 { margin: 0 0 1rem; font-family: "Playfair Display", Georgia, serif; font-size: clamp(2.52rem, 4.75vw, 4.41rem); font-weight: 600; letter-spacing: -.02em; line-height: 1.02; }
+.bk-hero-content h1 em { color: var(--brass); font-style: normal; }
+.bk-hero-content p { max-width: 34rem; margin: 0 auto; color: rgba(255,255,255,.8); font-size: clamp(0.83rem, 1.3vw, 0.95rem); line-height: 1.6; }
+
+/* ---------- flow section ---------- */
+.bk-flow-section { position: relative; z-index: 2; padding: clamp(6.5rem, 11vw, 9rem) 0 clamp(5rem, 9vw, 8rem); }
+.bk-rail-outer { display: flex; justify-content: center; margin-bottom: clamp(2.5rem, 5vw, 4rem); }
+.bk-rail {
+  position: relative; display: flex; align-items: center; gap: .2rem;
+  background: rgba(255,255,255,.32); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255,255,255,.5); border-radius: 999px; padding: .35rem;
+  box-shadow: 0 12px 32px rgba(15,25,28,.1), inset 0 1px 0 rgba(255,255,255,.6);
+  max-width: 100%; overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none;
+  transition: box-shadow .3s ease;
+}
+.bk-rail::-webkit-scrollbar { display: none; }
+.bk-rail-indicator {
+  position: absolute; top: .35rem; bottom: .35rem; left: .35rem; width: 0;
+  background: rgba(255,255,255,.9); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border-radius: 999px; box-shadow: 0 8px 20px rgba(15,25,28,.16), 0 1px 3px rgba(15,25,28,.08), inset 0 1px 0 rgba(255,255,255,.8);
+  transition: transform .45s cubic-bezier(.65,0,.35,1), width .45s cubic-bezier(.65,0,.35,1);
+  pointer-events: none; z-index: 0;
+}
+.bk-rail-step {
+  position: relative; z-index: 1; display: flex; align-items: center; justify-content: center;
+  gap: .5rem; padding: .8rem 1.6rem; margin: 0; border-radius: 999px; background: transparent; border: 0;
+  color: var(--muted-foreground); cursor: default; white-space: nowrap;
+  -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box; font: inherit; text-align: center;
+  transition: color .35s ease;
+}
+.bk-rail-step:not(:disabled) { cursor: pointer; }
+@media (hover: hover) and (pointer: fine) { .bk-rail-step:not(:disabled):hover:not(.is-active) { color: var(--ink); } }
+.bk-rail-step:disabled:not(.is-active) { opacity: .55; }
+.bk-rail-step.is-active { transform: translateY(-.5px); }
+.bk-rail-label { font-size: 0.76rem; font-weight: 700; letter-spacing: -.01em; transition: color .35s ease; }
+.bk-rail-step.is-done .bk-rail-label,
+.bk-rail-step.is-done .bk-rail-icon { color: var(--brass); }
+.bk-rail-step.is-active { color: var(--ink); }
+.bk-rail-step.is-active .bk-rail-label { color: var(--ink); animation: bk-rail-label-in .38s var(--ease-out); }
+@keyframes bk-rail-label-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+.bk-rail-step-fixed { cursor: default !important; opacity: .55; }
+.bk-rail-step-fixed.is-active,
+.bk-rail-step-fixed.is-done { opacity: 1; }
+@media (hover: hover) and (pointer: fine) { .bk-rail-step-fixed:hover { color: inherit !important; } }
+.bk-rail-icon { display: block; width: 16px; height: 16px; flex: 0 0 auto; transition: color .35s ease; }
+
+.bk-grid { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 44rem; margin: 0 auto; align-items: start; }
+.bk-ticket-wrap { display: none !important; }
+/* "Choose your stay" needs more breathing room than the other steps —
+   the room photos were getting cramped/small inside the same 44rem column
+   every other step uses, so widen just this one step's container while
+   it's the active step (falls back gracefully to the normal 44rem in any
+   browser without :has() support, which is fine on the older/narrower
+   viewports where that support gap actually matters). */
+.bk-grid:has(.bk-step[data-step="2"].is-current) { max-width: 68rem; }
+
+/* ---------- form panel ---------- */
+.bk-panel {
+  position: relative; background: rgba(255,255,255,.5); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255,255,255,.55); border-radius: 20px; padding: clamp(1.75rem, 4vw, 3rem);
+  box-shadow: 0 24px 60px rgba(17,30,34,.1), inset 0 1px 0 rgba(255,255,255,.7); overflow: hidden;
+  transition: box-shadow .4s ease;
+}
+.bk-step, .bk-success { display: none; }
+.bk-step.is-current, .bk-success.is-current { display: block; }
+.bk-step.is-current, .bk-success.is-current {
+  opacity: 1;
+  /* NOTE: no "transform" here (not even translateY(0)) on purpose. Any
+     non-"none" transform on an ancestor of a native <input type="date">
+     breaks how mobile Chrome anchors/hit-tests its calendar popup: the
+     calendar still paints in the right spot, but taps land on stale
+     coordinates underneath it, so dates look tappable but silently don't
+     select — a real device/mobile-only symptom, since desktop mouse
+     clicks don't hit the same bug. The mid-transition frames (rise-in/out,
+     below) still pass through a transform briefly, but the element no
+     longer sits on one permanently once settled as .is-current, which is
+     when someone actually taps the date field. */
+  transition: opacity .42s var(--ease-out), transform .42s var(--ease-out);
+  position: relative;
+  z-index: 1;
+}
+.bk-step.bk-anim-out, .bk-success.bk-anim-out { opacity: 0 !important; transform: translateY(-20px) !important; }
+.bk-step.bk-anim-in-start, .bk-success.bk-anim-in-start { opacity: 0 !important; transform: translateY(26px) !important; }
+.bk-step-head { margin-bottom: clamp(1.6rem, 3vw, 2.2rem); }
+.bk-step-eyebrow { display: block; margin-bottom: .6rem; color: var(--brass); font-size: 0.58rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
+.bk-step-head h2 { margin: 0 0 .5rem; font-family: "Playfair Display", Georgia, serif; font-size: clamp(1.35rem, 3vw, 1.89rem); font-weight: 600; letter-spacing: -.02em; color: var(--ink); }
+.bk-step-head p { margin: 0; max-width: 34rem; color: var(--muted-foreground); font-size: 0.79rem; line-height: 1.6; }
+
+.bk-field-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: start; }
+.bk-field-row-single { grid-template-columns: 1fr; max-width: 22rem; }
+.bk-field-guests { min-width: 8rem; }
+.bk-field { display: grid; gap: .45rem; margin-top: 1.1rem; }
+.bk-field label, .bk-hint-label { color: var(--ink); font-size: 0.56rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.bk-field input, .bk-field select, .bk-field textarea { width: 100%; min-height: 46px; padding: 0 .9rem; border: 1px solid rgba(23,35,42,.18); border-radius: 10px; outline: none; color: var(--ink); background: #fff; font-size: 0.79rem; font-family: "DM Sans", sans-serif; transition: border-color .2s ease, box-shadow .2s ease, background .2s ease; }
+.bk-field textarea { min-height: 92px; padding: .75rem .9rem; resize: vertical; }
+.bk-field input:focus, .bk-field select:focus, .bk-field textarea:focus { border-color: var(--brass); box-shadow: 0 0 0 3px rgba(186,141,92,.12); background: #fff; }
+
+/* icon-prefixed inputs: name, email, country */
+.bk-input-wrap { position: relative; }
+.bk-input-wrap .bk-input-icon { position: absolute; top: 50%; left: .85rem; width: 17px; height: 17px; transform: translateY(-50%); color: var(--muted-foreground); pointer-events: none; transition: color .2s ease; }
+.bk-input-wrap input { padding-left: 2.5rem; }
+.bk-field-icon input:focus ~ .bk-input-icon,
+.bk-input-wrap:focus-within .bk-input-icon { color: var(--brass); }
+
+.bk-hint { margin-top: .35rem; color: var(--muted-foreground); font-size: 0.67rem; }
+.bk-hint.is-error { color: var(--destructive, #a44636); font-weight: 600; }
+.bk-phone-row { display: flex; gap: .5rem; }
+.bk-phone-row input { flex: 1 1 auto; min-width: 0; }
+.bk-phone-row.is-invalid .bk-code-trigger,
+.bk-phone-row.is-invalid input { border-color: var(--destructive, #a44636); }
+.bk-phone-row.is-invalid input:focus { box-shadow: 0 0 0 3px rgba(164,70,54,.14); }
+
+.bk-code-select { position: relative; flex: 0 0 auto; }
+.bk-code-trigger { display: flex; align-items: center; gap: .45rem; min-height: 46px; height: 46px; padding: 0 .8rem; border: 1px solid rgba(23,35,42,.18); border-radius: 10px; background: #fff; color: var(--ink); font-size: 0.79rem; font-family: "DM Sans", sans-serif; cursor: pointer; transition: border-color .2s ease, box-shadow .2s ease; }
+@media (hover: hover) and (pointer: fine) { .bk-code-trigger:hover { border-color: rgba(23,35,42,.32); } }
+.bk-code-select.is-open .bk-code-trigger { border-color: var(--brass); box-shadow: 0 0 0 3px rgba(186,141,92,.12); }
+.bk-code-flag { display: inline-flex; font-size: 0.95rem; line-height: 1; }
+.bk-code-flag img { width: 20px; height: 15px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(23,35,42,.08); }
+.bk-code-value { font-weight: 600; }
+.bk-code-caret { margin-left: .1rem; font-size: 0.59rem; color: var(--muted-foreground); transition: transform .18s var(--ease-out); }
+.bk-code-select.is-open .bk-code-caret { transform: rotate(180deg); }
+
+.bk-code-panel { display: none; position: absolute; z-index: 20; top: calc(100% + .5rem); left: 0; width: 17rem; max-width: 80vw; background: #fff; border: 1px solid rgba(23,35,42,.12); border-radius: 12px; box-shadow: 0 18px 40px rgba(15,25,28,.16); overflow: hidden; }
+.bk-code-select.is-open .bk-code-panel { display: block; }
+.bk-code-search { width: 100%; min-height: 42px; padding: 0 .9rem; border: 0; border-bottom: 1px solid rgba(23,35,42,.1); outline: none; color: var(--ink); background: var(--bk-mist); font-size: 0.76rem; font-family: "DM Sans", sans-serif; }
+.bk-code-list { max-height: 15.5rem; overflow-y: auto; padding: .35rem; }
+.bk-code-option { display: flex; align-items: center; gap: .55rem; width: 100%; padding: .55rem .6rem; border: 0; border-radius: 8px; background: transparent; color: var(--ink); font-size: 0.76rem; font-family: "DM Sans", sans-serif; text-align: left; cursor: pointer; transition: background .15s ease; }
+@media (hover: hover) and (pointer: fine) { .bk-code-option:hover, .bk-code-option.is-active { background: var(--bk-mist); } }
+.bk-code-option .bk-code-flag { font-size: 0.95rem; }
+.bk-code-option-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-code-option-num { color: var(--muted-foreground); font-weight: 600; }
+.bk-code-empty { padding: 1rem .6rem; color: var(--muted-foreground); font-size: 0.74rem; text-align: center; }
+
+/* ---------- date picker (custom calendar dropdown) ----------
+   Hand-rolled instead of native <input type="date">: the native picker's
+   popup is positioned/hit-tested by the browser itself, and on mobile
+   Chrome that positioning breaks (visually-fine, silently-untappable
+   dates) the moment any ancestor gets a CSS transform, transition, or a
+   few other layout features — brittle in a way that's outside our
+   control. This version is a plain DOM panel we size and place ourselves
+   (see book-now.js), appended straight to <body> so it's never nested
+   inside anything that could reintroduce that class of bug, and its taps
+   are ordinary click events — identical code path on phone and desktop. */
+.bk-date-field { position: relative; }
+.bk-date-icon {
+  position: absolute; top: 50%; left: .9rem; transform: translateY(-50%);
+  width: 17px; height: 17px; color: var(--muted-foreground);
+  pointer-events: none; transition: color .2s ease;
+  z-index: 1;
+}
+/* ".bk-field .bk-date-trigger" (two classes) — needs to out-specificity the
+   generic ".bk-field input" rule above, which would otherwise win and strip
+   the left padding the calendar icon sits in. It's a <button>, not an
+   <input>, so that generic rule doesn't apply anyway, but the selector is
+   kept parallel for clarity/consistency with the rest of the form. */
+.bk-field .bk-date-trigger {
+  display: flex; align-items: center;
+  width: 100%; min-height: 46px;
+  padding: 0 .9rem 0 2.5rem;
+  border: 1px solid rgba(23,35,42,.18); border-radius: 10px;
+  background: #fff; color: var(--ink);
+  font-size: 0.79rem; font-family: "DM Sans", sans-serif;
+  text-align: left; cursor: pointer;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.bk-date-trigger[data-empty="true"] { color: var(--muted-foreground); }
+@media (hover: hover) and (pointer: fine) { .bk-field .bk-date-trigger:hover { border-color: rgba(23,35,42,.32); } }
+.bk-field .bk-date-trigger:focus-visible,
+.bk-field .bk-date-trigger.is-open { outline: none; border-color: var(--brass); box-shadow: 0 0 0 3px rgba(186,141,92,.12); }
+.bk-date-field:has(.bk-date-trigger:focus-visible),
+.bk-date-field:has(.bk-date-trigger.is-open) { color: var(--brass); }
+.bk-date-field:has(.bk-date-trigger:focus-visible) .bk-date-icon,
+.bk-date-field:has(.bk-date-trigger.is-open) .bk-date-icon { color: var(--brass); }
+
+/* the calendar panel itself — appended to <body>, positioned with fixed
+   coordinates computed in JS (see openCalendar in book-now.js), so its
+   placement never depends on where in the page it happens to render. */
+.bk-cal {
+  position: fixed;
+  z-index: 300;
+  width: 18.5rem; max-width: calc(100vw - 1.6rem);
+  background: #fff;
+  border: 1px solid rgba(23,35,42,.12);
+  border-radius: 14px;
+  box-shadow: 0 22px 48px rgba(15,25,28,.2);
+  padding: .9rem .9rem 1rem;
+  opacity: 0;
+  transform: translateY(-6px) scale(.98);
+  pointer-events: none;
+  transition: opacity .16s var(--ease-out), transform .16s var(--ease-out);
+}
+.bk-cal.is-open { opacity: 1; transform: none; pointer-events: auto; }
+.bk-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .7rem; }
+.bk-cal-title { font-family: "DM Sans", sans-serif; font-weight: 700; font-size: 0.78rem; letter-spacing: .02em; color: var(--ink); }
+.bk-cal-nav { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: #f0efe9; color: var(--ink); transition: background .18s ease, opacity .18s ease, transform .12s var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .bk-cal-nav:not(:disabled):hover { background: #e3e1d9; } }
+.bk-cal-nav:active:not(:disabled) { transform: scale(.92); }
+.bk-cal-nav:disabled { opacity: .3; cursor: default; }
+.bk-cal-nav svg { width: 14px; height: 14px; }
+.bk-cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: .2rem; }
+.bk-cal-weekdays span { display: block; text-align: center; font-size: 0.6rem; font-weight: 700; letter-spacing: .04em; color: var(--muted-foreground); padding-bottom: .35rem; }
+.bk-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.bk-cal-day {
+  display: grid; place-items: center;
+  aspect-ratio: 1; width: 100%;
+  border-radius: 8px;
+  background: transparent; color: var(--ink);
+  font-size: 0.74rem; font-weight: 500;
+  transition: background .15s ease, color .15s ease;
+}
+.bk-cal-day[disabled] { color: rgba(23,35,42,.24); cursor: default; }
+.bk-cal-day.is-outside { color: rgba(23,35,42,.24); }
+.bk-cal-day.is-today { font-weight: 700; box-shadow: inset 0 0 0 1.5px var(--brass); }
+@media (hover: hover) and (pointer: fine) { .bk-cal-day:not([disabled]):hover { background: var(--bk-mist, #f0efe9); } }
+.bk-cal-day.is-selected { background: var(--brass) !important; color: #fff !important; font-weight: 700; box-shadow: none; }
+@media (max-width: 640px) {
+  .bk-cal { width: calc(100vw - 1.6rem); }
+}
+
+.bk-stepper { display: inline-flex; align-items: center; gap: .4rem; min-height: 46px; padding: 0 .4rem; border: 1px solid rgba(23,35,42,.18); border-radius: 10px; width: fit-content; }
+.bk-stepper button { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; background: #f0efe9; color: var(--ink); font-size: 0.99rem; font-weight: 700; line-height: 1; transition: background .35s ease, transform .3s var(--ease-out), color .35s ease; }
+@media (hover: hover) and (pointer: fine) { .bk-stepper button:hover { background: #e3e1d9; color: var(--ink); } }
+.bk-stepper button:active { background: #d7d4c8; transform: scale(.92); }
+.bk-stepper span { min-width: 1.1rem; text-align: center; font-weight: 700; color: var(--ink); }
+
+.bk-room-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; margin-top: .3rem; }
+.bk-room { position: relative; display: flex; flex-direction: column; border: 1.5px solid rgba(255,255,255,.5); border-radius: 16px; overflow: hidden; cursor: pointer; background: rgba(255,255,255,.45); backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); transition: border-color .25s ease, transform .25s var(--ease-out), box-shadow .25s ease; }
+@media (hover: hover) and (pointer: fine) { .bk-room:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(17,30,34,.1); } }
+.bk-room.is-selected { border-color: var(--brass); box-shadow: 0 0 0 3px rgba(186,141,92,.14); }
+.bk-room-media { position: relative; }
+.bk-room-img-wrap { position: relative; aspect-ratio: 16/9; overflow: hidden; cursor: pointer; }
+.bk-room-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .38s ease, transform .7s var(--ease-out), object-position .7s var(--ease-out); }
+/* TEMP DEMO ONLY — the 3 angle thumbnails currently reuse the same photo
+   as a placeholder, so switching angles wouldn't visibly do anything.
+   This fakes a different crop/zoom per angle just so the "click a
+   thumbnail → main photo changes" behaviour is visible in the meantime.
+   Delete this block (and the data-demo-angle attribute set in
+   book-now.js) once each angle has its own real uploaded photo. */
+.bk-room-photo[data-demo-angle="1"] { object-position: 78% 35%; transform: scale(1.22); }
+.bk-room-photo[data-demo-angle="2"] { object-position: 25% 70%; transform: scale(1.35); }
+#room-expand-img[data-demo-angle="1"] { object-position: 78% 35%; transform: scale(1.22); }
+#room-expand-img[data-demo-angle="2"] { object-position: 25% 70%; transform: scale(1.35); }
+@media (hover: hover) and (pointer: fine) { .bk-room-img-wrap:hover .bk-room-photo { transform: scale(1.045); } }
+.bk-room-photo.is-swapping { opacity: 0; }
+.bk-room-angles { position: absolute; top: 50%; right: .55rem; transform: translateY(-50%); display: flex; flex-direction: column; gap: .4rem; z-index: 2; }
+.bk-room-angle { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,.7); background-size: cover; background-position: center; box-shadow: 0 4px 12px rgba(9,30,33,.28); cursor: pointer; padding: 0; opacity: .68; transition: opacity .2s ease, transform .2s var(--ease-out), border-color .2s ease; }
+@media (hover: hover) and (pointer: fine) { .bk-room-angle:hover { opacity: .92; transform: translateX(-2px); } }
+.bk-room-angle.is-active { opacity: 1; border-color: #fff; box-shadow: 0 0 0 2px var(--brass), 0 4px 12px rgba(9,30,33,.32); }
+@media (min-width: 900px) {
+  .bk-room-grid { gap: 1.6rem; }
+  .bk-room-img-wrap { aspect-ratio: 3/2; }
+}
+.bk-room-body { padding: 1rem 1.1rem 1.2rem; }
+.bk-room-body h3 { margin: 0 0 .3rem; font-family: "Playfair Display", Georgia, serif; font-size: 0.95rem; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
+.bk-room-body p { margin: 0 0 .7rem; color: var(--muted-foreground); font-size: 0.7rem; line-height: 1.5; }
+.bk-room-price { display: flex; align-items: baseline; justify-content: space-between; font-size: 0.7rem; color: var(--ink); }
+.bk-room-price strong { display: inline-flex; align-items: baseline; gap: .25rem; font-size: 0.95rem; font-weight: 700; color: var(--brass); }
+.bk-room-price strong small { font-size: 0.56rem; font-weight: 600; letter-spacing: .04em; color: var(--muted-foreground); text-transform: uppercase; }
+/* "More Details" link to the full room page — sits inside the clickable
+   .bk-room card, so it needs to escape the card's own select-this-room
+   click/keydown handling (guarded in book-now.js) rather than just
+   toggling the room as selected when tapped. */
+.bk-room-more-details { display: inline-flex; align-items: center; gap: .35rem; margin-top: .65rem; padding-top: .65rem; border-top: 1px solid rgba(23,35,42,.1); font-size: .62rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--brass); text-decoration: none; transition: gap .2s var(--ease-out), color .2s ease; }
+@media (hover: hover) and (pointer: fine) { .bk-room-more-details:hover { gap: .55rem; color: var(--ink); } }
+.bk-room-more-details span { transition: transform .2s var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .bk-room-more-details:hover span { transform: translateX(2px); } }
+.bk-room-check { position: absolute; top: .7rem; right: .7rem; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,.9); color: var(--brass); font-size: 0.63rem; opacity: 0; transform: scale(.6); transition: opacity .2s ease, transform .2s var(--ease-out); }
+.bk-room.is-selected .bk-room-check { opacity: 1; transform: scale(1); }
+
+.bk-review-list { display: grid; gap: 0; border-top: 1px solid rgba(23,35,42,.1); margin-top: .5rem; }
+.bk-review-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: .85rem 0; border-bottom: 1px solid rgba(23,35,42,.1); }
+.bk-review-row span:first-child { color: var(--muted-foreground); font-size: 0.67rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.bk-review-row span:last-child { color: var(--ink); font-size: 0.83rem; font-weight: 500; text-align: right; }
+.bk-review-download { display: flex; flex-direction: row-reverse; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .9rem; margin-top: 1.4rem; width: 100%; text-align: right; }
+.bk-download-row { position: relative; display: flex; align-items: center; }
+.bk-btn-download { position: relative; background: var(--brass); color: #fff; }
+@media (hover: hover) and (pointer: fine) { .bk-btn-download:hover { background: var(--ink); } }
+.bk-download-cursor { position: absolute; left: 50%; bottom: -14px; top: auto; right: auto; width: 24px; height: 24px; flex-shrink: 0; pointer-events: none; transform-origin: 22% 12%; animation: bkCursorTapBottom 3s cubic-bezier(0.45, 0, 0.2, 1) infinite; }
+.bk-download-cursor svg { position: relative; z-index: 1; width: 100%; height: 100%; display: block; filter: drop-shadow(0 3px 6px rgba(0,0,0,.35)); }
+/* wave/ripple removed per request — just the tap-hint cursor icon remains */
+@keyframes bkCursorTapBottom {
+  0%   { transform: translate(-50%, 22px) rotate(-8deg) scale(1); opacity: 0; }
+  10%  { opacity: 1; }
+  22%  { transform: translate(-50%, 0) rotate(-8deg) scale(1.05); opacity: 1; }
+  34%  { transform: translate(-50%, 4px) rotate(-8deg) scale(.82); opacity: 1; }
+  46%  { transform: translate(-50%, 0) rotate(-8deg) scale(1.05); opacity: 1; }
+  70%  { transform: translate(-50%, 0) rotate(-8deg) scale(1); opacity: 1; }
+  90%  { transform: translate(-50%, 22px) rotate(-8deg) scale(1); opacity: 0; }
+  100% { transform: translate(-50%, 22px) rotate(-8deg) scale(1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .bk-download-cursor { animation: none; opacity: 0; } }
+.bk-download-cursor.is-hidden { opacity: 0 !important; animation: none !important; }
+.bk-next-wrap { position: relative; display: inline-flex; }
+.bk-next-cursor { left: 50%; right: auto; bottom: -14px; top: auto; transform-origin: 22% 12%; opacity: 0; animation: none; }
+.bk-next-cursor.is-active { animation: bkCursorTapBottom 3s cubic-bezier(0.45, 0, 0.2, 1) infinite; }
+.bk-download-notice { display: flex; align-items: center; gap: .7rem; flex: 0 1 auto; max-width: 100%; padding: .85rem 1rem; border: 1px solid rgba(211,47,47,.4); border-radius: 12px; background: rgba(211,47,47,.08); white-space: normal; }
+.bk-download-notice-icon { display: grid; place-items: center; flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: #d32f2f; color: #fff; font-size: 0.65rem; font-weight: 700; font-style: italic; }
+.bk-download-notice p { margin: 0; color: var(--ink); font-size: 0.74rem; line-height: 1.5; }
+.bk-download-notice strong { color: #d32f2f; }
+@media (max-width: 640px) {
+  /* Keep it on one line — shortened copy fits, so no more wrapping/clipping. */
+  .bk-download-notice { flex-wrap: nowrap; align-items: center; padding: .6rem .75rem; gap: .45rem; }
+  .bk-download-notice-icon { width: 16px; height: 16px; font-size: 0.54rem; }
+  .bk-download-notice p { flex-basis: auto; font-size: 0.63rem; line-height: 1.4; }
+}
+
+
+
+.bk-actions { display: flex; align-items: center; justify-content: flex-end; gap: 1rem; margin-top: clamp(1.8rem, 3.5vw, 2.5rem); }
+/* On the Review step specifically, pull "Send via WhatsApp" up so it reads
+   as one tight group with the notice + download button above it, instead
+   of floating far below with a big gap. Different values for mobile vs
+   desktop since the review block's own layout differs between the two. */
+.bk-step[data-step="4"].is-current + .bk-actions { margin-top: .9rem; }
+@media (min-width: 561px) {
+  .bk-step[data-step="4"].is-current + .bk-actions { margin-top: 1rem; }
+}
+.bk-btn { display: inline-flex; align-items: center; gap: .6rem; min-height: 46px; padding: 0 1.4rem; border: 0; border-radius: 999px; font-size: 0.67rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; transition: transform .18s var(--ease-out), background .2s ease, box-shadow .2s ease; }
+/* Remove the browser's default black focus box that lingers on a button
+   after it's tapped/clicked (that's what was reading as a leftover "wave"/
+   outline on the Download button after downloading) — keep a soft ring
+   only for real keyboard navigation via :focus-visible. */
+.bk-btn:focus { outline: none; }
+.bk-btn:focus-visible { outline: 2px solid rgba(186,141,92,.55); outline-offset: 2px; }
+.bk-btn-primary {
+  position: relative;
+  color: #fff;
+  background: var(--brass);
+}
+@media (hover: hover) and (pointer: fine) { .bk-btn-primary:hover { background: var(--ink); } }
+.bk-btn-primary:disabled {
+  background: linear-gradient(180deg, rgba(255,255,255,.3) 0%, rgba(23,35,42,.06) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(23,35,42,.14);
+  box-shadow: none;
+  color: rgba(23,35,42,.5);
+  cursor: not-allowed;
+}
+@media (hover: hover) and (pointer: fine) { .bk-btn-primary:disabled:hover { background: linear-gradient(180deg, rgba(255,255,255,.3) 0%, rgba(23,35,42,.06) 100%); } }
+/* Once the PDF has been downloaded, the Download button itself swaps to
+   this same muted/"used" look — visually handing the spotlight over to
+   "Send via WhatsApp" (which becomes solid teal once it unlocks, above). */
+.bk-btn-download.is-done {
+  background: linear-gradient(180deg, rgba(255,255,255,.3) 0%, rgba(23,35,42,.06) 100%);
+  color: rgba(23,35,42,.5);
+  border: 1px solid rgba(23,35,42,.14);
+  box-shadow: none;
+}
+@media (hover: hover) and (pointer: fine) { .bk-btn-download.is-done:hover { background: linear-gradient(180deg, rgba(255,255,255,.3) 0%, rgba(23,35,42,.06) 100%); } }
+.bk-btn-download.is-done:focus-visible { outline: none; }
+.bk-btn-ghost { background: transparent; color: var(--ink); border: 1px solid rgba(23,35,42,.2); }
+@media (hover: hover) and (pointer: fine) { .bk-btn-ghost:hover { background: var(--bk-mist); } }
+.bk-btn:active:not(:disabled) { transform: scale(.97); }
+.bk-btn span { transition: transform .25s var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .bk-btn:hover span { transform: translateX(3px); } }
+
+/* ---------- success state ---------- */
+.bk-success { display: none; position: relative; text-align: center; padding: clamp(1.4rem, 3vw, 2.2rem) clamp(1.2rem, 4vw, 2.6rem) clamp(1.3rem, 2.5vw, 1.8rem); --bk-success-pad-x: clamp(1.2rem, 4vw, 2.6rem); }
+.bk-success.is-current { display: flex; flex-direction: column; align-items: center; }
+
+/* top-of-card back button, replacing the checkmark/"done" icon so nothing implies the booking is already confirmed */
+.bk-success-back { align-self: flex-start; margin-bottom: 1.1rem; min-height: 40px; padding: 0 1.1rem; font-size: 0.67rem; }
+
+.bk-success .bk-step-eyebrow { margin-bottom: .55rem; text-align: center; }
+.bk-success h2 { margin: 0 0 .55rem; font-family: "Playfair Display", Georgia, serif; font-size: clamp(1.35rem, 3.2vw, 1.89rem); font-weight: 600; letter-spacing: -.02em; line-height: 1.12; color: var(--ink); }
+.bk-success h2 em { font-family: "DM Sans", Arial, Helvetica, sans-serif; font-style: normal; font-weight: 700; color: var(--brass); }
+.bk-success p { max-width: 30rem; margin: 0 auto 1.3rem; color: var(--muted-foreground); font-size: 0.79rem; line-height: 1.6; }
+
+.bk-success-actions { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .65rem; width: 100%; max-width: 22rem; margin: 0 auto; }
+.bk-success-actions .bk-btn { min-height: 48px; width: 100%; justify-content: center; }
+.bk-btn-whatsapp { position: relative; gap: .55rem; background: linear-gradient(135deg, #29d16f, #1fae5b); color: #fff; box-shadow: 0 12px 26px rgba(31,174,91,.32); }
+@media (hover: hover) and (pointer: fine) { .bk-btn-whatsapp:hover { background: linear-gradient(135deg, #22bd61, #189c4e); box-shadow: 0 14px 30px rgba(31,174,91,.4); } }
+.bk-whatsapp-mark { width: 18px; height: 18px; flex-shrink: 0; }
+.bk-btn-arrow { transition: transform .25s var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .bk-btn-whatsapp:hover .bk-btn-arrow { transform: translateX(3px); } }
+
+
+/* success note: made prominent (filled card, not a faint top-border line) so people actually notice the fallback contact.
+   Sized to hug its content so it doesn't look like an oversized empty bar; max-width bleeds slightly past the
+   success step's own side padding only as a safety net in case a very narrow screen would otherwise force a wrap. */
+.bk-success-note { display: flex; align-items: center; gap: .55rem; text-align: left; margin: 1.4rem auto 0; padding: .75rem 1.05rem; width: fit-content; max-width: calc(100% + 2 * var(--bk-success-pad-x, 0px)); background: rgba(211,47,47,.08); border: 1px solid rgba(211,47,47,.4); border-radius: 14px; box-sizing: border-box; }
+.bk-success-note-icon { flex-shrink: 0; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #d32f2f; color: #fff; font-size: 0.68rem; }
+.bk-success-note p { margin: 0; min-width: 0; color: var(--ink); font-size: clamp(0.63rem, 3vw, 0.76rem); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bk-success-note strong { color: #d32f2f; }
+@media (max-width: 640px) {
+  .bk-success-note { padding: .6rem .8rem; gap: .45rem; }
+  .bk-success-note-icon { width: 19px; height: 19px; font-size: 0.58rem; }
+}
+
+@media (min-width: 560px) {
+  .bk-success-actions .bk-btn-whatsapp { padding: 0 1.7rem; }
+}
+
+/* ---------- booking summary ticket (signature element) — a resort welcome note, not a boarding pass ---------- */
+.bk-ticket-wrap { position: sticky; top: 6.5rem; }
+.bk-ticket { position: relative; background: rgba(255,255,255,.55); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); color: var(--ink); border-radius: 22px; overflow: hidden; box-shadow: 0 30px 70px rgba(23,35,42,.14), inset 0 1px 0 rgba(255,255,255,.7); border: 1px solid rgba(255,255,255,.55); }
+.bk-ticket-top { position: relative; padding: 1.3rem 1.6rem 1.2rem; background: linear-gradient(155deg, var(--brass-deep, #8a6339), var(--brass) 130%); color: #fff; text-align: center; }
+.bk-ticket-top::after { content: ""; position: absolute; inset: 0; opacity: .5; mix-blend-mode: soft-light; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E"); pointer-events: none; }
+.bk-ticket-eyebrow { position: relative; display: block; margin-bottom: .5rem; color: rgba(255,255,255,.68); font-size: 0.54rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
+.bk-ticket-seal { position: relative; display: grid; place-items: center; width: 64px; height: 64px; margin: .3rem auto; overflow: hidden; }
+.bk-ticket-seal img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 6px 16px rgba(0,0,0,.18)); }
+.bk-ticket-tagline { position: relative; margin: .5rem 0 0; color: rgba(255,255,255,.75); font-size: 0.67rem; letter-spacing: .02em; }
+
+@media (max-width: 640px) {
+  .bk-ticket-top { padding: 1.3rem 1.3rem 1.2rem; }
+  .bk-ticket-seal { width: 54px; height: 54px; }
+  .bk-ticket-eyebrow { font-size: 0.5rem; }
+  .bk-ticket-tagline { font-size: 0.63rem; }
+}
+
+.bk-ticket-perf { position: relative; height: 0; }
+.bk-ticket-perf::before, .bk-ticket-perf::after { content: ""; position: absolute; top: -11px; width: 22px; height: 22px; border-radius: 50%; background: var(--ivory); }
+.bk-ticket-perf::before { left: -11px; }
+.bk-ticket-perf::after { right: -11px; }
+.bk-ticket-tear { border-top: 1px dashed rgba(23,35,42,.18); margin: 0 1.7rem; }
+
+.bk-ticket-body { padding: 1.5rem 1.7rem 1.7rem; }
+.bk-ticket-table { margin-bottom: 1.1rem; }
+.bk-ticket-row { display: flex; align-items: baseline; gap: .8rem; padding: .7rem 0; font-size: 0.76rem; }
+.bk-ticket-row span:first-child { flex: 0 0 38%; color: var(--brass); font-size: 0.56rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.bk-ticket-row span:last-child { flex: 1; color: var(--ink); font-weight: 500; text-align: right; }
+.bk-ticket-row.is-empty span:last-child { color: var(--muted-foreground); font-weight: 400; text-align: center; }
+.bk-ticket-total { display: flex; align-items: baseline; justify-content: space-between; margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid rgba(23,35,42,.12); }
+.bk-ticket-total span:first-child { font-size: 0.61rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-foreground); }
+.bk-ticket-total strong { font-size: 1.4rem; font-weight: 700; letter-spacing: -.02em; color: var(--brass); }
+.bk-ticket-code { margin-top: 1.15rem; padding-top: 1rem; border-top: 1px dashed rgba(23,35,42,.15); font-size: 0.65rem; line-height: 1.5; color: var(--muted-foreground); text-align: center; }
+.bk-ticket-note { margin-top: .9rem; font-size: 0.67rem; line-height: 1.55; color: var(--muted-foreground); }
+
+/* ticket row value rise-up refresh */
+.bk-ticket-row span:last-child, .bk-ticket-total strong { display: inline-block; transition: opacity .35s var(--ease-out), transform .35s var(--ease-out); }
+.bk-value-pop { opacity: 0; transform: translateY(8px); }
+
+/* ---------- good to know ---------- */
+.bk-info-section { background: var(--bk-mist); padding: clamp(3.5rem, 7vw, 6rem) 0; }
+.bk-info-head { text-align: center; max-width: 640px; margin: 0 auto clamp(2rem, 4vw, 3rem); }
+.bk-info-head .eyebrow { display: block; margin-bottom: 1.1rem; color: var(--brass); }
+.bk-info-head h2 { margin: 0; font-family: "Playfair Display", Georgia, serif; font-weight: 600; letter-spacing: -.02em; line-height: 1.04; font-size: clamp(1.35rem, 3.4vw, 2.61rem); color: var(--ink); }
+.bk-info-head h2 em { font-family: inherit; font-style: normal; font-weight: 700; color: var(--brass); }
+.bk-info-head .section-lede { max-width: 24rem; margin: 1.1rem auto 0; color: var(--muted-foreground); font-size: 0.77rem; line-height: 1.5; font-family: "DM Sans", Arial, Helvetica, sans-serif; }
+.bk-info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.bk-info-card { background: #fff; border-radius: 16px; padding: 1.6rem 1.5rem; box-shadow: 0 12px 30px rgba(17,30,34,.05); }
+.bk-info-card span { display: block; margin-bottom: .7rem; color: var(--brass); font-size: 0.58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.bk-info-card h3 { margin: 0 0 .5rem; font-family: "Playfair Display", Georgia, serif; font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+.bk-info-card p { margin: 0; color: var(--muted-foreground); font-size: 0.76rem; line-height: 1.6; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1080px) {
+  .bk-grid { grid-template-columns: 1fr; }
+  .bk-ticket-wrap { position: static; }
+  .bk-room-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .bk-info-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .bk-room-grid { grid-template-columns: 1fr; }
+  .bk-room-angle { width: 26px; height: 26px; border-radius: 7px; }
+  .bk-room-angles { right: .4rem; gap: .32rem; }
+  .bk-field-row { grid-template-columns: 1fr; }
+  .bk-rail-outer { justify-content: flex-start; }
+  .bk-rail { justify-content: flex-start; }
+  .bk-rail-step { padding: .7rem 1.1rem; gap: .4rem; }
+  .bk-rail-label { font-size: .72rem; }
+  .bk-rail-icon { width: 15px; height: 15px; }
+}
+@media (max-width: 560px) {
+  .bk-hero { min-height: 480px; }
+  .bk-panel { padding: 1.4rem 1.1rem; border-radius: 16px; }
+
+  /* icon-only layout: at this width text labels get cramped and slow to
+     scan, so each step collapses to a single centered icon — faster to
+     identify at a glance. The sliding "indicator" pill used on desktop is a
+     separate JS-positioned element, which on some mobile browsers can end
+     up a hair off from the button it's supposed to sit behind (font-swap
+     timing, viewport resize on scroll, etc.) making the icon look
+     off-center relative to it. To make this bulletproof on mobile, we drop
+     the separate indicator entirely and paint the active/highlight state
+     directly ON the button itself — icon and background are now literally
+     the same box, so they can never drift apart. */
+  .bk-rail-outer { justify-content: center; }
+  .bk-rail { justify-content: space-between; gap: .15rem; padding: .3rem; width: 100%; max-width: 24rem; }
+  .bk-rail-indicator { display: none; }
+  .bk-rail-step {
+    flex: 0 0 auto; width: 2.7rem; height: 2.7rem; padding: 0; margin: 0; gap: 0;
+    border-radius: 14px; transition: background .3s ease, box-shadow .3s ease, color .35s ease;
+  }
+  .bk-rail-step.is-active {
+    background: rgba(255,255,255,.9);
+    box-shadow: 0 8px 20px rgba(15,25,28,.16), 0 1px 3px rgba(15,25,28,.08), inset 0 1px 0 rgba(255,255,255,.8);
+  }
+  .bk-rail-icon {
+    display: block; width: 19px; height: 19px; margin: 0; flex: 0 0 auto;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  .bk-rail-label {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  .bk-actions { flex-direction: column-reverse; align-items: stretch; }
+  .bk-actions .bk-btn { width: 100%; justify-content: center; }
+
+  /* Reorder: red notice on top, download button centered below it — then
+     .bk-actions (Send via WhatsApp / Back) follows right after in the DOM,
+     and column-reverse above already puts "Send via WhatsApp" before "Back". */
+  .bk-review-download { flex-direction: column; align-items: center; text-align: center; gap: .5rem; margin-top: 1rem; }
+  .bk-download-notice {
+    order: -1;
+    width: 100%;
+    /* base rule has "flex: 1 1 260px" for the desktop ROW layout, where 260px
+       is a width basis — in this column layout that basis becomes a HEIGHT,
+       which is what was blowing the box up huge. Reset it back to auto. */
+    flex: 0 0 auto;
+  }
+  .bk-download-row { justify-content: center; width: 100%; }
+  .bk-download-row .bk-btn-download { width: 100%; justify-content: center; }
+}
+
+
+/* Small muted "(Optional)" tag next to the Special Requests label. */
+.bk-optional-tag { text-transform: none; font-weight: 500; letter-spacing: 0; color: var(--muted-foreground); }
+
+/* ---------- glassmorphism fallback for browsers without backdrop-filter ---------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .bk-rail { background: var(--bk-mist); }
+  .bk-rail-indicator { background: #fff; }
+  .bk-panel { background: var(--paper); }
+  .bk-ticket { background: var(--paper); }
+  .bk-room { background: #fff; }
+}
+
+/* ==========================================================================
+   Room photo viewer layout — this only targets .room-gallery-panel (a
+   modifier class added just to the room viewer's own panel element), so it
+   layers on top of the shared .highlight-expand-* rules from style.css
+   without touching the index.html highlight/excursion/gallery viewers at
+   all. Repositions the prev/next arrows to sit centered on the left/right
+   edges of the photo (classic product-gallery style) and adds a row of
+   real clickable thumbnails under the title/description, instead of the
+   bottom-right icon pair + text-only "photo x of y" tag used elsewhere.
+   ========================================================================== */
+.room-gallery-panel .highlight-expand-nav {
+  left: 0;
+  right: 0;
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  justify-content: space-between;
+  padding: 0 clamp(.7rem, 3vw, 2rem);
+  gap: 0;
+}
+.room-gallery-panel .highlight-expand-nav-btn {
+  background: var(--brass);
+  border-color: rgba(255,255,255,.55);
+  box-shadow: 0 10px 26px rgba(7,22,25,.35);
+}
+@media (hover: hover) and (pointer: fine) { .room-gallery-panel .highlight-expand-nav-btn:hover { background: var(--brass-deep, #8a6339); transform: scale(1.06); } }
+.room-gallery-panel .highlight-expand-nav-btn:active { transform: scale(.92); }
+
+.room-expand-thumbs { display: flex; gap: .55rem; flex-wrap: wrap; margin-top: .95rem; }
+.room-expand-thumb {
+  width: 56px;
+  height: 168px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,.4);
+  background-size: cover;
+  background-position: center;
+  padding: 0;
+  cursor: pointer;
+  opacity: .68;
+  transition: opacity .2s ease, border-color .2s ease, transform .2s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .room-expand-thumb:hover { opacity: .9; transform: translateY(-2px); } }
+.room-expand-thumb.is-active { opacity: 1; border-color: #fff; box-shadow: 0 0 0 2px var(--brass); }
+
+@media (max-width: 640px) {
+  .room-gallery-panel .highlight-expand-nav-btn { width: 38px; height: 38px; }
+  .room-gallery-panel .highlight-expand-nav { padding: 0 .5rem; }
+  .room-expand-thumb { width: 46px; height: 46px; border-radius: 8px; }
+  .room-expand-thumbs { gap: .4rem; margin-top: .8rem; }
+}
+
+/* ==========================================================================
+   Header contact bubble — replaces the "Book now" header CTA on this page
+   only (redundant once you're already on the booking page). Reuses the
+   exact .wa-bubble / .wa-bubble-btn / .wa-bubble-tooltip / .telegram-bubble
+   styling already defined in style.css for the floating index.html widget,
+   so the chat option buttons look identical; only the wrapper/trigger here
+   are new, since this version sits inline in the header and drops its menu
+   downward instead of floating fixed in the corner of the screen.
+   ========================================================================== */
+/* base .wa-bubble / .wa-bubble-btn / .wa-bubble-tooltip / .telegram-bubble
+   styles — kept for reference/reuse elsewhere, though the header dropdown
+   itself now embeds the full chat-widget-panel (see below) instead of a
+   plain icon list. */
+.wa-bubble {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .6rem;
+  text-decoration: none;
+}
+.wa-bubble-tooltip {
+  padding: .55rem .95rem;
+  background: var(--ink, #17232a);
+  color: #fff;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(17,30,34,.18);
+}
+.wa-bubble-btn {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(155deg, #35d066, #22b656);
+  box-shadow: 0 12px 26px rgba(37,165,86,.4), inset 0 1px 0 rgba(255,255,255,.3);
+  transition: transform .2s var(--ease-out, ease), box-shadow .2s ease;
+}
+.wa-bubble-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.telegram-bubble-btn {
+  background: linear-gradient(155deg, #4bc3ec, #229ed9);
+  box-shadow: 0 12px 26px rgba(34,158,217,.4), inset 0 1px 0 rgba(255,255,255,.3);
+}
+@media (hover: hover) and (pointer: fine) { .wa-bubble:hover .wa-bubble-btn { transform: translateY(-2px) scale(1.04); } }
+
+.header-contact-bubbles {
+  position: fixed;
+  right: clamp(1.1rem, 3vw, 1.8rem);
+  bottom: clamp(1.1rem, 3vw, 1.8rem);
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  /* the column's own box spans the full height of its children — including
+     the chat panel even while it's invisible/closed (opacity:0) — so
+     without this, that empty space silently blocked taps on whatever sat
+     underneath it (e.g. the mobile date-picker calendar, which can land in
+     this same bottom-right corner of the screen). Same fix already applied
+     to .contact-bubbles on the homepage; this widget just never got it. */
+  pointer-events: none;
+}
+.header-contact-trigger { pointer-events: auto; }
+.header-contact-trigger-badge { position: absolute; top: -2px; right: -2px; z-index: 3; display: grid; place-items: center; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #e14b3f; color: #fff; font-family: "DM Sans", Arial, Helvetica, sans-serif; font-size: .6rem; font-weight: 700; line-height: 1; box-shadow: 0 0 0 2px #fff, 0 3px 8px rgba(0,0,0,.25); transition: opacity .2s ease, transform .2s ease; }
+.header-contact-bubbles.is-open .header-contact-trigger-badge { opacity: 0; transform: scale(.5); pointer-events: none; }
+
+.header-contact-options {
+  position: absolute;
+  bottom: calc(100% + .8rem);
+  right: 0;
+  z-index: 40;
+}
+/* the shared .chat-widget-panel look (avatar/header/body/input) comes from
+   style.css, built for the fixed bottom-right widget on index.html — the
+   panel rises up from the trigger, same as there, since this is now also
+   a fixed bottom-right trigger instead of sitting in the header row. */
+.header-contact-options .chat-widget-panel {
+  transform-origin: bottom right;
+  transform: translateY(14px) scale(.94);
+}
+.header-contact-bubbles.is-open .chat-widget-panel {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.chat-widget-telegram-link {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .85rem 1.1rem;
+  background: #fff;
+  border-top: 1px solid rgba(23,35,42,.08);
+  color: var(--ink, #17232a);
+  font-family: "DM Sans", Arial, Helvetica, sans-serif;
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .2s ease;
+}
+@media (hover: hover) and (pointer: fine) { .chat-widget-telegram-link:hover { background: var(--ivory, #f6f1e8); } }
+.chat-widget-telegram-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(155deg, #4bc3ec, #229ed9);
+}
+.chat-widget-telegram-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.header-contact-trigger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: transparent;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(0,0,0,.22);
+  cursor: pointer;
+  transition: transform .2s var(--ease-out), box-shadow .2s ease;
+}
+@media (hover: hover) and (pointer: fine) { .header-contact-trigger:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 12px 24px rgba(0,0,0,.28); } }
+.header-contact-trigger-icon { position: absolute; display: grid; place-items: center; transition: opacity .2s ease, transform .25s var(--ease-out); }
+.header-contact-trigger-icon-open { inset: 0; }
+.header-contact-trigger-icon-open svg { display: block; }
+.header-contact-trigger-icon-close { opacity: 0; transform: scale(.5) rotate(-45deg); }
+.header-contact-bubbles.is-open .header-contact-trigger-icon-open { opacity: 0; transform: scale(.5) rotate(45deg); }
+.header-contact-bubbles.is-open .header-contact-trigger-icon-close { opacity: 1; transform: scale(1) rotate(0deg); }
+
+@media (max-width: 640px) {
+  .header-contact-options { width: min(320px, calc(100vw - 2.4rem)); }
+}
+
+/* ==========================================================================
+   Header entrance animation (matches index.html): the logo slides in from
+   the left, and every nav item + the Book Now button (if present) slide
+   in from the right, over a smooth 2s, staggered slightly so it reads as
+   one sweep. Duplicated here since this page doesn't load index.html's
+   inline <style> block. Uses ".desktop-nav > *" so it also covers the
+   Accommodation and Others dropdowns (".nav-dropdown" divs), not just
+   plain <a> tags.
+   ========================================================================== */
+.site-header .brand-mark {
+  opacity: 0;
+  transform: translateX(-60px) scale(2);
+  transition: opacity 2s cubic-bezier(.22,.68,0,1), transform 2s cubic-bezier(.22,.68,0,1);
+}
+html:not(.is-preload) .site-header .brand-mark {
+  opacity: 1;
+  transform: translateX(0) scale(2);
+}
+
+.site-header .desktop-nav > * {
+  opacity: 0;
+  transform: translateX(56px);
+  transition: opacity 2s cubic-bezier(.22,.68,0,1), transform 2s cubic-bezier(.22,.68,0,1);
+}
+html:not(.is-preload) .site-header .desktop-nav > * {
+  opacity: 1;
+  transform: translateX(0);
+}
+.site-header .desktop-nav > *:nth-child(1) { transition-delay: .08s; }
+.site-header .desktop-nav > *:nth-child(2) { transition-delay: .18s; }
+.site-header .desktop-nav > *:nth-child(3) { transition-delay: .28s; }
+.site-header .desktop-nav > *:nth-child(4) { transition-delay: .38s; }
+.site-header .desktop-nav > *:nth-child(5) { transition-delay: .48s; }
+
+.site-header .header-cta {
+  opacity: 0;
+  transform: translateX(56px);
+  transition: opacity 2s cubic-bezier(.22,.68,0,1), transform 2s cubic-bezier(.22,.68,0,1);
+  transition-delay: .58s;
+}
+html:not(.is-preload) .site-header .header-cta {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header .brand-mark,
+  .site-header .desktop-nav > *,
+  .site-header .header-cta { transition: none !important; opacity: 1 !important; transform: none !important; }
+}

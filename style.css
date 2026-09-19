@@ -1,0 +1,2497 @@
+/* Editorial Island Luxury: ivory paper, mineral ocean teal, restrained brass, editorial offsets, and quiet-luxury motion. */
+
+:root {
+  --primary: #0b6e70;
+  --primary-foreground: #f5f1e8;
+  --sidebar-primary: #0b6e70;
+  --sidebar-primary-foreground: #f5f1e8;
+  --chart-1: #0b6e70;
+  --chart-2: #ba8d5c;
+  --chart-3: #183d3d;
+  --chart-4: #ddd3c1;
+  --chart-5: #17232a;
+  --radius: 0.4rem;
+  --background: #f5f1e8;
+  --foreground: #17232a;
+  --card: #fffdf7;
+  --card-foreground: #17232a;
+  --popover: #fffdf7;
+  --popover-foreground: #17232a;
+  --secondary: #e8e1d4;
+  --secondary-foreground: #17232a;
+  --muted: #eae3d8;
+  --muted-foreground: #6c716d;
+  --accent: #ba8d5c;
+  --accent-foreground: #fffdf7;
+  --destructive: #a44636;
+  --destructive-foreground: #fffdf7;
+  --border: rgba(23, 35, 42, 0.14);
+  --input: rgba(23, 35, 42, 0.18);
+  --ring: #0b6e70;
+  --sidebar: #f5f1e8;
+  --sidebar-foreground: #17232a;
+  --sidebar-accent: #e8e1d4;
+  --sidebar-accent-foreground: #17232a;
+  --sidebar-border: rgba(23, 35, 42, 0.14);
+  --sidebar-ring: #0b6e70;
+  --ink: #17232a;
+  --ivory: #f5f1e8;
+  --paper: #fffdf7;
+  --teal: #0b6e70;
+  --teal-deep: #123d40;
+  --brass: #ba8d5c;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; background: #fff; overflow-x: hidden; scrollbar-gutter: stable; }
+body {
+  margin: 0;
+  background: var(--ivory);
+  color: var(--ink);
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+button, input, select { font: inherit; }
+button { border: 0; }
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+::selection { background: var(--teal); color: var(--ivory); }
+
+
+.site-shell { overflow: hidden; background: #fff; }
+
+/* ==========================================================================
+   Smooth cross-page transitions (e.g. Home -> Book Now, like maafushi.com's
+   "Book Now" open). Works with the tiny inline script in each <head> that
+   adds "is-preload" before first paint, plus the click-intercept logic in
+   script.js / book-now.js. Pure opacity + transform (GPU-friendly) so it
+   stays smooth with no jank/lag.
+   ========================================================================== */
+html.is-preload body { opacity: 0; }
+body {
+  opacity: 1;
+  /* NOTE: intentionally no "transform" on <body> — a transform here would make
+     it the containing block for any position:fixed descendant (like our
+     navbar), breaking "stick to the viewport" and causing the header to
+     scroll away instead of staying pinned. Opacity-only fade avoids that. */
+  transition: opacity .38s cubic-bezier(.4,0,.2,1);
+  will-change: opacity;
+}
+/* JS adds this right before navigating to the next page */
+body.is-leaving { opacity: 0; pointer-events: none; }
+
+/* Quick, smooth fade-in for lazy-loaded images (see script.js) — hidden
+   until loaded, then a short 300ms fade rather than an abrupt pop. Kept
+   fast on purpose so scrolling through the gallery/cards still feels
+   snappy instead of laggy. */
+img[loading="lazy"], img.fade-load { opacity: 0; transition: opacity .3s ease; }
+img[loading="lazy"].is-loaded, img.fade-load.is-loaded { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  img[loading="lazy"], img.fade-load { opacity: 1; transition: none; }
+}
+.site-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  align-content: center;
+  gap: 2rem;
+  padding: 0 clamp(1.25rem, 4vw, 4.75rem);
+  color: #fff;
+  border-bottom: none;
+  overflow: visible;
+  transition: background-color .35s var(--ease-out), color .35s var(--ease-out), border-color .35s var(--ease-out), box-shadow .35s var(--ease-out), min-height .35s var(--ease-out), padding-top .35s var(--ease-out), padding-bottom .35s var(--ease-out), transform .5s var(--ease-out), opacity .5s var(--ease-out);
+  will-change: min-height, padding-top, padding-bottom, background-color, transform, opacity;
+}
+/* hide-on-scroll-down / reveal-on-scroll-up: JS toggles this class in script.js */
+.site-header.is-hidden { transform: translateY(-100%); }
+/* smooth "drawer" close — JS adds this alongside .is-hidden (book-now.js)
+   when a booking step starts, for a slower, more deliberate slide-up than
+   the snappy scroll-triggered hide above. */
+.site-header.is-drawer-hidden {
+  transition: background-color .35s var(--ease-out), color .35s var(--ease-out), border-color .35s var(--ease-out), box-shadow .35s var(--ease-out), min-height .35s var(--ease-out), padding-top .35s var(--ease-out), padding-bottom .35s var(--ease-out), transform 1.5s cubic-bezier(.65,0,.35,1), opacity 1.5s cubic-bezier(.65,0,.35,1);
+}
+/* Slow, deliberate "drawer sliding open" reveal for the navbar — used when
+   it reappears alongside the hero story's final full-bleed frame chapter,
+   instead of the snappy .5s scroll-triggered fade above. JS adds this class
+   right as it removes .is-story-hidden, then clears it once settled. */
+.site-header.is-frame-reveal {
+  transition: background-color .35s var(--ease-out), color .35s var(--ease-out), border-color .35s var(--ease-out), box-shadow .35s var(--ease-out), min-height .35s var(--ease-out), padding-top .35s var(--ease-out), padding-bottom .35s var(--ease-out), transform 1.5s cubic-bezier(.16,1,.3,1), opacity 1.5s cubic-bezier(.16,1,.3,1);
+}
+/* hidden while the pinned hero story is playing through its scroll-linked
+   chapters, so the welcome/about text can sit dead-center in the full
+   viewport with nothing overlapping it — JS toggles this in script.js */
+.site-header.is-story-hidden { opacity: 0; transform: translateY(-14px); pointer-events: none; }
+.site-header.is-scrolled {
+  background: rgba(245,241,232,.9);
+  color: var(--ink);
+  border-color: rgba(23,35,42,.12);
+  box-shadow: 0 12px 36px rgba(23,35,42,.08);
+  backdrop-filter: blur(16px);
+}
+.header-left { display: flex; align-items: center; gap: clamp(1rem, 2.6vw, 2rem); justify-self: start; }
+.brand-lockup { display: inline-flex; align-items: center; gap: .7rem; justify-self: start; }
+.brand-mark { width: 84px; height: 84px; object-fit: contain; filter: none; transition: filter .35s var(--ease-out); transform: scale(2); transform-origin: right center; margin-left: 84px; }
+.site-header.is-scrolled .brand-mark { filter: brightness(0); }
+.site-header.is-scrolled .header-cta { border-color: rgba(11,110,112,.22); background: linear-gradient(135deg, rgba(255,255,255,.86), rgba(208,232,230,.58)); box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 8px 25px rgba(11,110,112,.08); }
+.brand-type { display: grid; gap: 0; line-height: 1; }
+.brand-type strong { font-family: "Poppins", Arial, sans-serif; font-size: 1.12rem; font-weight: 600; letter-spacing: -.02em; }
+.brand-type small { margin-top: .25rem; font-size: .44rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; opacity: .72; }
+/* Groups the nav links + Book now button (+ mobile menu-trigger) together
+   as one right-hand cluster, so with .site-header's grid now split
+   auto / 1fr / auto, the empty 1fr middle column opens up as breathing
+   room between the logo and this group instead of the nav sitting
+   dead-center. */
+.header-nav-group { display: flex; align-items: center; gap: clamp(1.6rem, 3vw, 3.2rem); grid-column: 3; justify-self: end; }
+.desktop-nav { display: flex; align-items: center; justify-content: center; gap: clamp(1.2rem, 2.8vw, 3.1rem); }
+
+/* Accommodation nav dropdown — trigger keeps the same look as the other
+   desktop-nav links (it's a plain <a>, styled by .desktop-nav a above)
+   with a small chevron added; the panel opens on hover/focus below it,
+   listing the three room types with the first one picked out in brass
+   to match the reference screenshot's highlighted top row. */
+.nav-dropdown { position: relative; display: flex; align-items: center; }
+.nav-dropdown-trigger { display: inline-flex; align-items: center; gap: .38rem; }
+.nav-dropdown-chevron { width: 10px; height: 10px; flex-shrink: 0; transition: transform .25s var(--ease-out); }
+.nav-dropdown.is-open .nav-dropdown-chevron,
+.nav-dropdown:hover .nav-dropdown-chevron,
+.nav-dropdown:focus-within .nav-dropdown-chevron { transform: rotate(180deg); }
+
+.nav-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 1.1rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  min-width: 240px;
+  background: #fff;
+  box-shadow: 0 20px 44px rgba(23, 35, 42, .18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .25s var(--ease-out), transform .25s var(--ease-out), visibility .25s;
+  z-index: 20;
+}
+/* Invisible "bridge" filling the 1.1rem gap between the trigger and the
+   panel above it — without this, moving the mouse from the trigger word
+   down to the panel crosses a dead strip with nothing rendered in it, so
+   the cursor drifts off ".nav-dropdown" mid-travel, the panel starts
+   fading out, and the click on Highlights/Gallery lands on a
+   closing/already-gone panel (feels "stuck"/unresponsive). Since this
+   sits inside .nav-dropdown-panel, hovering it still counts as hovering
+   a descendant of .nav-dropdown, so the panel stays open the whole way down. */
+.nav-dropdown-panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 1.1rem;
+}
+/* Opens on hover — :focus-within is kept so keyboard/tab users can still
+   reach it; .is-open is kept as a harmless fallback in case anything
+   still toggles it. */
+.nav-dropdown.is-open .nav-dropdown-panel,
+.nav-dropdown:hover .nav-dropdown-panel,
+.nav-dropdown:focus-within .nav-dropdown-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+.nav-dropdown-panel a {
+  display: block;
+  /* .desktop-nav a further down (padding: .4rem 0) sits later in the
+     cascade at the SAME specificity as this rule, so it was silently
+     winning and zeroing out the left/right padding on every panel row —
+     invisible while the panel had a fixed 240px min-width to spare, but
+     as soon as the Others panel was shrunk to fit its own content, the
+     text had no breathing room and pressed right up against (and visually
+     "clipped" into) the box edge. ".nav-dropdown .nav-dropdown-panel a"
+     below bumps this one class higher in specificity so it wins instead. */
+  padding: .95rem 1.4rem;
+  font-family: "DM Sans", Arial, Helvetica, sans-serif;
+  font-size: .72rem;
+  font-weight: 400;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--ink);
+  opacity: 1;
+  transform: none;
+  transition: background .2s ease, color .2s ease;
+  white-space: nowrap;
+}
+.nav-dropdown-panel a::after { content: none; }
+.nav-dropdown .nav-dropdown-panel a { padding: .95rem 1.4rem; }
+/* The Others dropdown is the one closest to the right edge of the header
+   (last item before "Book now"), so centering its panel under the
+   trigger (left:50%/translateX(-50%)) could push it past the right edge
+   of the viewport on narrower desktop widths — most visible on
+   book-now.html, whose header has less room to the right. Right-align
+   that one panel to the trigger's right edge instead so it always stays
+   inside the viewport, however narrow. Accommodation (first dropdown)
+   has more room to its right and keeps the centered style above. */
+.nav-dropdown:last-of-type .nav-dropdown-panel {
+  left: auto;
+  right: 0;
+  /* "Others" only holds two short one-word rows (Highlights/Gallery), unlike
+     Accommodation's longer "Triple Room" etc. — the shared 240px min-width
+     above made this panel sprawl far past its own trigger, overlapping
+     "Offers" and reaching almost to "Accommodation". Shrink it to fit its
+     own content instead, so it visually sits under "Others" like the
+     trigger it belongs to. */
+  min-width: 0;
+  width: max-content;
+  transform: translateY(-8px);
+}
+.nav-dropdown:last-of-type.is-open .nav-dropdown-panel,
+.nav-dropdown:last-of-type:hover .nav-dropdown-panel,
+.nav-dropdown:last-of-type:focus-within .nav-dropdown-panel {
+  transform: translateY(0);
+}
+/* Thin divider between rows so the three room names don't run together —
+   skip it on the first row (nothing above it to separate from). */
+.nav-dropdown-panel a + a { border-top: 1px solid rgba(23, 35, 42, .1); }
+/* Each row highlights only while the cursor is actually over it — no
+   row stays highlighted by default. */
+.nav-dropdown-panel a:hover { background: var(--brass); color: #fff !important; }
+
+/* .desktop-nav a's transparent-over-hero / scrolled color rules (further
+   down this file) target every anchor inside .desktop-nav, including
+   these panel links — without this override the rows inherited white
+   text on the panel's white background and went invisible. The panel
+   itself is always solid white, so its links must always stay dark
+   regardless of header state — hence !important, since those header-
+   state rules sit later in the cascade at equal specificity. */
+.nav-dropdown-panel a { color: var(--ink) !important; }
+
+@media (max-width: 900px) {
+  .nav-dropdown-panel { display: none; }
+}
+.desktop-nav a { position: relative; padding: .4rem 0; font-size: .72rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; opacity: .82; transition: opacity .2s ease; }
+.desktop-nav a::after { content: ""; position: absolute; left: 0; right: 100%; bottom: 0; height: 1px; background: currentColor; transition: right .3s var(--ease-out); }
+.desktop-nav a:hover { opacity: 1; }
+.desktop-nav a:hover::after { right: 0; }
+.header-cta { justify-self: end; display: inline-flex; align-items: center; justify-content: center; line-height: 1; gap: .4rem; min-height: 34px; padding: .5rem .82rem; border: 1px solid rgba(255,255,255,.44); border-radius: 0; background: linear-gradient(135deg, rgba(255,255,255,.7), rgba(255,255,255,.28)); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 8px 28px rgba(3,22,26,.12); backdrop-filter: blur(18px) saturate(135%); -webkit-backdrop-filter: blur(18px) saturate(135%); font-size: .58rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; transition: transform .18s var(--ease-out), background .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease; }
+.header-cta:hover { border-color: rgba(255,255,255,.7); background: linear-gradient(135deg, rgba(255,255,255,.88), rgba(186,141,92,.72)); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 10px 28px rgba(3,22,26,.18); }
+.header-cta:active, .button:active, .circle-link:active { transform: scale(.97); }
+.menu-trigger { display: none; justify-self: end; color: currentColor; background: transparent; }
+/* Hamburger icon lines — previously only defined in book-now.css, so the
+   button rendered with no visible icon on index.html and the room-detail
+   pages (family-room.html, double-room.html, triple-room.html), none of
+   which load book-now.css. Moved here into the shared stylesheet so the
+   icon actually shows up on every page. */
+#menu-trigger { position: relative !important; width: 40px !important; height: 40px !important; align-items: center !important; justify-content: center !important; }
+#menu-trigger .hamburger-icon { position: relative; width: 22px; height: 16px; display: inline-block; }
+#menu-trigger .hamburger-icon .line { position: absolute; left: 0; width: 100%; height: 2px; background: currentColor; border-radius: 2px; transition: transform .35s cubic-bezier(.65,0,.35,1), opacity .25s ease, top .35s cubic-bezier(.65,0,.35,1); }
+#menu-trigger .hamburger-icon .line1 { top: 0; }
+#menu-trigger .hamburger-icon .line2 { top: 7px; }
+#menu-trigger .hamburger-icon .line3 { top: 14px; }
+#menu-trigger[aria-expanded="true"] .hamburger-icon .line1 { top: 7px; transform: rotate(45deg); }
+#menu-trigger[aria-expanded="true"] .hamburger-icon .line2 { opacity: 0; transform: scaleX(0); }
+#menu-trigger[aria-expanded="true"] .hamburger-icon .line3 { top: 7px; transform: rotate(-45deg); }
+.site-shell:has(.mobile-menu.is-open) .site-header #menu-trigger { color: #12100d !important; z-index: 1002 !important; position: relative !important; }
+
+.mobile-menu { display: none; }
+.hero-section { position: relative; min-height: max(700px, 100svh); display: grid; place-items: center; isolation: isolate; color: #fff; background: var(--teal-deep); }
+@media (min-width: 641px) {
+  .hero-section { min-height: clamp(600px, 82svh, 820px); }
+}
+/* ---------- Hero intro: page opens fully "zoomed in", then eases out to
+   reveal the whole shot — like a video opening — before the header fades in
+   and the text rises up. The wrap handles ONLY this one-time zoom-out layer,
+   so it doesn't fight with the existing continuous ambient drift/flip
+   animation already living on .hero-backdrop itself. ---------- */
+.hero-backdrop-wrap { position: absolute; inset: 0; z-index: -3; overflow: hidden; transform: scale(1.32) translateZ(0); transform-origin: center; transition: transform 3s cubic-bezier(.16,1,.3,1); will-change: transform; backface-visibility: hidden; }
+/* Loop-stutter fix: give the <video> itself its own compositor layer,
+   separate from the wrapper's scroll-driven scale transform above. Without
+   this, every scale() the stepper applies to .hero-backdrop-wrap forces the
+   browser to repaint the video's decoded frames on the main thread, and if
+   that repaint lands right on the loop boundary it shows up as a visible
+   pause/stutter before it restarts. translateZ(0) + will-change promotes the
+   video to the GPU so the wrapper's transform and the video's own decode/
+   loop timing stay independent. */
+.hero-backdrop { will-change: transform; backface-visibility: hidden; transform: translateZ(0); }
+.hero-section.is-intro-revealed .hero-backdrop-wrap { transform: scale(1); }
+.hero-backdrop, .hero-shade, .hero-grain { position: absolute; inset: 0; }
+.hero-backdrop { animation: none; } /* now a <video> — framing/cover handled by the
+  object-fit/object-position rules in index.html's inline style block, not a
+  CSS background-image, so nothing to set here anymore. */
+.hero-section.is-intro-done .hero-backdrop { animation: hero-drift 16s ease-in-out infinite alternate; }
+.hero-shade { z-index: -2; background: linear-gradient(90deg, rgba(4,19,22,.30) 0%, rgba(3,24,25,.14) 48%, rgba(4,19,22,.04) 100%), linear-gradient(0deg, rgba(4,19,22,.18) 0%, transparent 42%, rgba(4,19,22,.08) 100%); }
+.hero-grain { z-index: -1; pointer-events: none; opacity: .14; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.2'/%3E%3C/svg%3E"); mix-blend-mode: soft-light; }
+.hero-content { width: min(100% - 2.5rem, 1080px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 0; text-align: center; }
+/* text rises up per WORD (see script.js splitIntoWords), staggered, once
+   the zoom-out reveal begins — .hero-rise itself is just a marker now */
+.word-rise { display: inline-block; opacity: 0; transform: translateY(30px); transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); will-change: opacity, transform; }
+.word-rise.is-shown { opacity: 1; transform: translateY(0); }
+/* header starts hidden and fades/slides in alongside the reveal */
+.site-header.is-intro-hidden { opacity: 0; transform: translateY(-18px); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-backdrop-wrap { transition: none; transform: scale(1); }
+  .word-rise { transition: none; opacity: 1; transform: none; }
+  .site-header.is-intro-hidden { transition: none; opacity: 1; transform: none; }
+  .hero-explore-btn { transition: none !important; opacity: 1; transform: none; }
+}
+.hero-explore-btn { margin-top: 2.6rem; min-height: 50px; padding: .9rem 2.1rem; }
+/* Liquid-glass treatment matching the "Book your stay" CTA (.frame-cta-glass
+   in index.html's inline styles) — frosted, saturated blur with a crisp
+   border and soft outer glow. Tinted with the brand teal (not plain white)
+   so the glass reads as a solid, legible pill rather than a washed-out
+   sheet — plain white glass let the bright aerial photo bleed straight
+   through and killed the white text's contrast. The heavier blur is what
+   gives the "frosted" look in the reference screenshot: the photo behind
+   is still visible, just softened into a color wash instead of sharp detail. */
+.hero-explore-btn {
+  background: linear-gradient(135deg, rgba(11,110,112,.97), rgba(4,38,46,.97));
+  border: 1.5px solid rgba(255,255,255,.8);
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0,0,0,.6);
+  box-shadow: 0 10px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.35);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+.hero-explore-btn:hover {
+  background: linear-gradient(135deg, rgba(11,110,112,1), rgba(4,38,46,1));
+  border-color: rgba(255,255,255,.95);
+  color: #fff;
+}
+/* the button rises up as one piece (not word-by-word like the eyebrow/title/
+   copy above it) — splitting its text into separate word spans would make
+   them flex-items inside .button's own "gap", which visibly shoved
+   "Explore" and "Rasdhoo" apart. Only the pre-reveal hidden state lives
+   here; the actual 2s reveal transition is applied temporarily via inline
+   style in script.js and cleared right after, so it doesn't permanently
+   override .button's own (much faster) hover/active transition — that
+   override was what made hovering/pressing the button feel broken. */
+.hero-explore-btn { opacity: 0; transform: translateY(30px); }
+.hero-explore-btn.is-shown { opacity: 1; transform: translateY(0); }
+.hero-explore-btn.is-shown { opacity: 1; transform: translateY(0); }
+.hero-eyebrow { color: rgba(255,255,255,.8); margin-bottom: .4rem; }
+.eyebrow { display: inline-block; color: var(--brass); font-size: .64rem; font-weight: 700; letter-spacing: .25em; line-height: 1.2; text-transform: uppercase; }
+.hero-title { max-width: 100%; margin: 1.1rem auto 1.3rem; font-family: "Poppins", Arial, sans-serif; font-size: clamp(1.8rem, 2.8vw, 2.8rem); font-weight: 500; letter-spacing: -.065em; line-height: 1.15; text-wrap: balance; }
+.hero-title-break { display: none; }
+.hero-copy { max-width: 30rem; margin: .6rem auto 0; font-size: clamp(.95rem, 1.35vw, 1.14rem); color: rgba(255,255,255,.83); }
+.hero-actions { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 2.6rem; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: .75rem; min-height: 45px; padding: .78rem 1.2rem; border: 1px solid rgba(255,255,255,.38); border-radius: 999px; background: linear-gradient(135deg, rgba(255,255,255,.26), rgba(255,255,255,.1)); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.48), 0 9px 25px rgba(3,22,26,.14); backdrop-filter: blur(18px) saturate(135%); -webkit-backdrop-filter: blur(18px) saturate(135%); font-size: .68rem; font-weight: 700; letter-spacing: .12em; line-height: 1; text-transform: uppercase; transition: transform .18s var(--ease-out), background .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease; }
+.button:hover { transform: translateY(-2px); }
+.button-light { border-color: rgba(255,255,255,.72); background: linear-gradient(135deg, rgba(255,255,255,.82), rgba(255,255,255,.38)); color: var(--ink); }
+.button-light:hover { border-color: rgba(255,255,255,.92); background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(186,141,92,.7)); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 12px 30px rgba(3,22,26,.2); }
+.button-dark { border-color: rgba(11,110,112,.42); background: linear-gradient(135deg, rgba(11,110,112,.64), rgba(18,61,64,.46)); color: #fff; }
+.button-dark:hover { border-color: rgba(186,141,92,.7); background: linear-gradient(135deg, rgba(11,110,112,.76), rgba(186,141,92,.5)); color: #fff; }
+.circle-link { display: inline-grid; place-items: center; width: 45px; height: 45px; border: 1px solid rgba(255,255,255,.6); border-radius: 50%; color: #fff; background: linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.06)); box-shadow: inset 0 1px 0 rgba(255,255,255,.42), 0 8px 22px rgba(3,22,26,.12); backdrop-filter: blur(18px) saturate(135%); -webkit-backdrop-filter: blur(18px) saturate(135%); transition: background .25s ease, border-color .25s ease, transform .18s var(--ease-out), box-shadow .25s ease; }
+.circle-link:hover { background: var(--brass); border-color: var(--brass); transform: translateY(-2px) rotate(-8deg); }
+.circle-link-large { width: 62px; height: 62px; }
+.hero-rail { position: absolute; top: 50%; font-size: .58rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; writing-mode: vertical-rl; color: rgba(255,255,255,.68); }
+.hero-rail-left { left: clamp(1.25rem, 4vw, 4.75rem); transform: rotate(180deg) translateY(50%); }
+.hero-rail-right { right: clamp(1.25rem, 4vw, 4.75rem); transform: translateY(-50%); }
+.hero-bottomline { position: absolute; inset: auto clamp(1.25rem, 4vw, 4.75rem) 2.2rem; display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.28); color: rgba(255,255,255,.68); font-size: .58rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
+.hero-scroll-label { display: inline-flex; align-items: center; gap: .65rem; }
+
+.section-shell { width: min(100% - 2.5rem, 1280px); margin: 0 auto; }
+.section-index { display: flex; align-items: center; gap: .55rem; padding-top: 1.4rem; border-top: 1px solid rgba(23,35,42,.18); color: var(--teal); font-size: .62rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.section-index span { color: var(--muted-foreground); font-weight: 500; }
+.intro-section { padding-top: clamp(6rem, 11vw, 11rem); padding-bottom: clamp(3rem, 6vw, 5rem); }
+.intro-layout { display: grid; grid-template-columns: minmax(170px, .75fr) minmax(0, 2.8fr); gap: clamp(2rem, 8vw, 10rem); padding-top: clamp(3rem, 6vw, 6.2rem); }
+.intro-aside { align-self: start; padding-top: .55rem; color: var(--muted-foreground); }
+.intro-aside .eyebrow { color: var(--brass); }
+.intro-aside p { max-width: 10rem; margin: 1.25rem 0 0; font-family: "Poppins", Arial, sans-serif; font-size: 1.25rem; line-height: 1.12; }
+.vertical-rule { width: 1px; height: 76px; margin-top: 2.2rem; background: var(--brass); }
+.display-heading { margin: 0; font-family: "Poppins", Arial, sans-serif; font-size: clamp(3rem, 6.3vw, 6.9rem); font-weight: 500; letter-spacing: -.06em; line-height: .88; text-wrap: balance; }
+.display-heading em, h1 em, h2 em { color: var(--teal); font-style: italic; font-weight: 400; }
+.intro-copy { max-width: 850px; }
+.intro-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(210px, .72fr); gap: clamp(2rem, 8vw, 8.5rem); margin-top: clamp(3rem, 7vw, 7rem); padding-left: clamp(0rem, 8vw, 8rem); }
+.intro-body p { margin: 0; max-width: 35rem; color: #52605e; font-size: 1rem; }
+.intro-body p + p { max-width: 16rem; margin-top: 1rem; font-family: "Poppins", Arial, sans-serif; font-size: 1.55rem; line-height: 1.08; color: var(--ink); }
+.text-link { display: inline-flex; align-items: center; gap: .7rem; width: fit-content; margin-top: 1.7rem; padding-bottom: .5rem; border-bottom: 1px solid var(--brass); color: var(--ink); font-size: .68rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; transition: gap .25s var(--ease-out), color .25s ease; }
+.text-link:hover { gap: 1rem; color: var(--teal); }
+
+.motion-section { position: relative; min-height: min(74vh, 720px); display: grid; place-items: center; isolation: isolate; color: #fff; overflow: hidden; }
+.motion-image, .motion-overlay { position: absolute; inset: 0; }
+.motion-image { z-index: -2; background-position: center; background-size: cover; filter: saturate(.85); transition: transform 1.1s var(--ease-out); }
+.motion-section:hover .motion-image { transform: scale(1.035); }
+.motion-overlay { z-index: -1; background: linear-gradient(90deg, rgba(7,29,31,.7), rgba(7,29,31,.1) 68%), linear-gradient(0deg, rgba(7,29,31,.4), transparent 45%); }
+.motion-content { width: min(100% - 2.5rem, 1280px); padding-top: 2rem; }
+.motion-content .eyebrow { color: rgba(255,255,255,.7); }
+.motion-content h2 { max-width: 34rem; margin: 1.5rem 0 1rem; font-family: "Poppins", Arial, sans-serif; font-size: clamp(3.2rem, 6.5vw, 7.2rem); font-weight: 500; letter-spacing: -.065em; line-height: .85; }
+.motion-content h2 em { color: #fff; }
+.motion-content p { color: rgba(255,255,255,.75); font-size: .7rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+.play-button { display: grid; place-items: center; width: 58px; height: 58px; margin-bottom: 2rem; padding-left: 3px; border: 1px solid rgba(255,255,255,.7); border-radius: 50%; color: #fff; background: linear-gradient(135deg, rgba(255,255,255,.24), rgba(255,255,255,.07)); box-shadow: inset 0 1px 0 rgba(255,255,255,.46), 0 8px 22px rgba(3,22,26,.14); backdrop-filter: blur(18px) saturate(135%); -webkit-backdrop-filter: blur(18px) saturate(135%); transition: background .25s ease, transform .25s var(--ease-out), box-shadow .25s ease; }
+.play-button:hover { background: var(--brass); transform: scale(1.06); }
+.motion-caption { position: absolute; right: clamp(1.25rem, 4vw, 4.75rem); bottom: 2.2rem; color: rgba(255,255,255,.66); font-size: .6rem; letter-spacing: .15em; text-transform: uppercase; }
+
+.highlights-section { padding-top: clamp(3rem, 6vw, 6rem); padding-bottom: clamp(3rem, 6vw, 6rem); }
+.instagram-cta { display: flex; justify-content: center; margin-top: clamp(2.2rem, 5vw, 3.4rem); }
+.instagram-link { --ig-color: var(--ink); display: inline-flex; align-items: center; gap: .5rem; position: relative; padding-bottom: .35rem; color: var(--ig-color); text-decoration: none; transition: transform .35s cubic-bezier(.22,1,.36,1); }
+.instagram-link-icon { display: flex; transition: transform .4s cubic-bezier(.22,1,.36,1), color .35s ease; color: var(--ig-color); }
+.instagram-link-icon svg { width: 15px; height: 15px; display: block; }
+.instagram-link-text { font-family: "Poppins", Arial, sans-serif; font-size: .82rem; font-weight: 500; letter-spacing: -.005em; transition: color .35s ease; }
+.instagram-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .45s cubic-bezier(.22,1,.36,1), background-color .35s ease; }
+.instagram-link:hover, .instagram-link:focus-visible { --ig-color: #3a6ff5; transform: translateY(-1px); }
+.instagram-link:hover .instagram-link-icon, .instagram-link:focus-visible .instagram-link-icon { transform: rotate(-8deg) scale(1.1); }
+.instagram-link:hover::after, .instagram-link:focus-visible::after { transform: scaleX(1); }
+.section-heading-row { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding: clamp(3rem, 6vw, 6.2rem) 0 clamp(3.5rem, 7vw, 7rem); }
+.section-heading-row h2 { max-width: 800px; }
+.slideshow-section .section-heading-row h2 { font-size: clamp(1.8rem, 3.4vw, 2.9rem); }
+.slideshow-section .section-heading-row .eyebrow { display: block; margin-bottom: 1.1rem; }
+.section-lede { max-width: 17rem; margin: 0 1rem 0 0; color: var(--muted-foreground); font-size: .86rem; line-height: 1.5; }
+.stay-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(1.1rem, 2.4vw, 2.7rem); align-items: start; }
+.stay-card.card-offset-2 { margin-top: clamp(2.5rem, 7vw, 7rem); }
+.stay-card.card-offset-3 { margin-top: clamp(1.2rem, 3vw, 3rem); }
+.card-image-wrap { position: relative; aspect-ratio: .78; overflow: hidden; background: var(--secondary); }
+.card-image-wrap img { position: absolute; top: -9%; left: 0; width: 100%; height: 118%; object-fit: cover; transform: translate3d(0, var(--img-drift, 0px), 0) scale(var(--img-scale, 1)); transition: transform .25s var(--ease-out), filter .5s ease; will-change: transform; }
+.stay-card:hover .card-image-wrap img { --img-scale: 1.06; filter: saturate(1.08); }
+.card-image-wrap::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(7,22,25,.35), transparent 35%); pointer-events: none; }
+.card-number { position: absolute; z-index: 1; top: 1rem; left: 1rem; color: #fff; font-size: .62rem; font-weight: 700; letter-spacing: .15em; }
+.card-arrow { position: absolute; z-index: 1; right: 1rem; bottom: 1rem; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid rgba(255,255,255,.65); border-radius: 50%; color: #fff; transition: background .25s ease, transform .25s var(--ease-out); }
+.stay-card:hover .card-arrow { background: var(--brass); transform: rotate(-45deg); }
+.arrow-up-right { transform: rotate(-45deg); }
+.card-copy { padding: 1.25rem .2rem 0; }
+.card-copy h3 { margin: 0; font-family: "Poppins", Arial, sans-serif; font-size: 1.7rem; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.card-copy p { max-width: 18rem; margin: .8rem 0 0; color: var(--muted-foreground); font-size: .8rem; line-height: 1.55; }
+
+.offer-section { padding-bottom: clamp(7rem, 13vw, 13rem); }
+.offer-frame { position: relative; min-height: 570px; overflow: hidden; color: #fff; }
+.offer-image, .offer-overlay { position: absolute; inset: 0; }
+.offer-image { background-position: center; background-size: cover; transition: transform 1s var(--ease-out); }
+.offer-frame:hover .offer-image { transform: scale(1.04); }
+.offer-overlay { background: linear-gradient(90deg, rgba(11,30,31,.82), rgba(11,30,31,.22) 74%), linear-gradient(0deg, rgba(11,30,31,.4), transparent 50%); }
+.offer-copy { position: relative; z-index: 1; width: min(100% - 2.5rem, 520px); padding: clamp(3rem, 8vw, 8rem) 0 0 clamp(1.25rem, 7vw, 7.5rem); }
+.offer-copy .eyebrow { color: rgba(255,255,255,.72); }
+.offer-copy h2 { margin: 1.2rem 0 1.25rem; font-family: "Poppins", Arial, sans-serif; font-size: clamp(3.1rem, 6vw, 6.6rem); font-weight: 500; letter-spacing: -.06em; line-height: .84; }
+.offer-copy h2 em { color: #fff; }
+.offer-copy p { max-width: 20rem; margin: 0 0 2rem; color: rgba(255,255,255,.74); font-size: .88rem; }
+.offer-note { position: absolute; z-index: 1; right: clamp(1.25rem, 3vw, 3rem); bottom: 1.7rem; color: rgba(255,255,255,.65); font-size: .58rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+
+/* ---------- Island Experiences: continuous, seamless auto-scrolling card
+   loop (marquee-style), driven by JS (see script.js) so it can pause while
+   the user swipes/drags left-right and resume afterwards. Cards are
+   duplicated once in the markup so the track can wrap invisibly. ---------- */
+.excursions-section { padding: 0 0 clamp(4.5rem, 8vw, 7rem); background: #fff; overflow: hidden; }
+.excursions-section .section-heading-row { padding-top: clamp(2rem, 4vw, 3rem); padding-bottom: 0; margin-bottom: clamp(2rem, 4vw, 3.2rem); text-align: center; }
+.excursions-section .eyebrow { color: var(--brass); margin-bottom: 1.1rem; }
+.excursions-section .display-heading { font-size: clamp(1.5rem, 2.6vw, 2.1rem); }
+.excursions-section .section-lede { max-width: none; }
+#why-choose-us .section-lede { white-space: nowrap; }
+@media (max-width: 640px) {
+  #why-choose-us .section-lede { white-space: normal; }
+}
+/* NOTE: this used to have a mask-image edge-fade (transparent at the very
+   left/right of the loop, like a classic carousel vignette). Because this
+   loop scrolls continuously (marquee-style, never stops at fixed
+   positions), every single card constantly slides straight through those
+   fade zones as it enters/exits the strip — so every photo kept getting a
+   partial "washed out"/blended-with-white patch across part of itself at
+   some point, which is exactly the artifact reported. A moving belt and an
+   edge-fade mask don't mix, so the fade is removed; cards now stay fully
+   opaque the whole time they're on screen. */
+
+/* ==========================================================================
+   Island Activities — flat, responsive card grid (Snorkeling / Fishing /
+   Dolphin / Turtle / Sharks), matching the same .discover-flat-grid
+   component used on offers.html / explore-rasdhoo.html: cards "assemble"
+   in from alternating left/right sides as the section scrolls into view,
+   instead of the old single-card auto-looping carousel.
+   ========================================================================== */
+#experience.excursions-section { overflow-x: hidden; }
+
+#experience .discover-flat-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1.4rem, 2.4vw, 2.2rem);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(1.5rem, 4vw, 3rem);
+}
+
+@media (min-width: 1600px) { #experience .discover-flat-grid { max-width: min(92vw, 1800px); } }
+@media (min-width: 2000px) { #experience .discover-flat-grid { max-width: min(93vw, 2200px); } }
+@media (min-width: 2400px) { #experience .discover-flat-grid { max-width: min(93vw, 2600px); } }
+
+#experience .discover-flat-grid .offer-card {
+  flex: 0 1 calc(33.333% - clamp(1.4rem, 2.4vw, 2.2rem) * 2 / 3);
+  min-width: 260px;
+}
+
+@media (max-width: 640px) {
+  #experience .discover-flat-grid .offer-card { flex: 1 1 100%; min-width: 0; }
+}
+
+.experience-carousel-view-all-row { display: flex; justify-content: center; margin: clamp(1.4rem, 2.6vw, 2rem) auto 0; }
+
+/* Cards assemble in from alternating sides as the grid scrolls into view —
+   card 1 from the left, card 2 from the right, and so on. */
+#experience .offer-card.reveal {
+  --assemble-x: -70px;
+  opacity: 0;
+  transform: translateX(var(--assemble-x));
+  transition: opacity 2s cubic-bezier(.22,.68,0,1), transform 2s cubic-bezier(.22,.68,0,1);
+  transition-delay: 0s;
+}
+#experience .discover-flat-grid .offer-card.reveal:nth-child(2) { --assemble-x: 70px; transition-delay: .12s; }
+#experience .discover-flat-grid .offer-card.reveal:nth-child(3) { --assemble-x: 70px; transition-delay: .24s; }
+#experience .discover-flat-grid .offer-card.reveal:nth-child(4) { --assemble-x: -70px; transition-delay: .36s; }
+#experience .discover-flat-grid .offer-card.reveal:nth-child(5) { --assemble-x: 70px; transition-delay: .48s; }
+#experience .offer-card.reveal.is-visible { opacity: 1; transform: translateX(0); }
+
+/* View-all button fades/rises in on scroll, same timing pattern used
+   elsewhere on the page. */
+.excursions-section .experience-carousel-view-all-row.reveal { opacity: 0; transform: translateY(26px); transition: opacity 1.3s var(--ease-out), transform 1.3s var(--ease-out); transition-delay: .24s; }
+.excursions-section .experience-carousel-view-all-row.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  #experience .offer-card.reveal,
+  .excursions-section .experience-carousel-view-all-row.reveal { transition: none; opacity: 1; transform: none; }
+}
+
+/* ---------- "glimpse" collage: two square photo frames facing each other,
+   with the location badge centered in the gap between them. Left square
+   slides in from the left, right square slides in from the right (like
+   they're closing in to meet), badge grows into place last. ---------- */
+.collage-section { padding: 0 0 clamp(3rem, 6vw, 5rem); }
+.collage-heading { max-width: 34rem; margin: 0 auto clamp(2.5rem, 6vw, 4rem); text-align: center; }
+.collage-heading .eyebrow { display: block; margin-bottom: .9rem; color: var(--brass); }
+.collage-heading h2 { font-size: clamp(1.9rem, 4vw, 2.9rem); }
+.collage-stage { display: flex; justify-content: center; padding: clamp(2.5rem, 6vw, 4rem) 0 clamp(2.5rem, 6vw, 4.5rem); overflow: visible; }
+.collage-tilt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.4rem, 4vw, 2.6rem);
+  width: min(92%, 800px);
+}
+.collage-main, .collage-accent {
+  position: relative; flex: 1 1 0; min-width: 0; margin: 0;
+  aspect-ratio: 1 / 1; border-radius: 22px; overflow: hidden;
+  box-shadow: 0 34px 70px rgba(10,22,24,.28);
+}
+.collage-main img, .collage-accent img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.collage-main {
+  opacity: 0; transform: translateX(-46px) scale(0.92);
+  transition: opacity .8s cubic-bezier(.22,.68,0,1) .1s, transform .8s cubic-bezier(.22,.68,0,1) .1s, border-radius .9s cubic-bezier(.22,.68,0,1);
+  will-change: opacity, transform, border-radius;
+}
+.collage-accent {
+  opacity: 0; transform: translateX(46px) scale(0.92);
+  transition: opacity .8s cubic-bezier(.22,.68,0,1) .15s, transform .8s cubic-bezier(.22,.68,0,1) .15s;
+  will-change: opacity, transform;
+}
+/* the location badge sits centered over the gap between the two squares —
+   translate(-50%,-50%) is the permanent centering (always applied), the
+   scale is what animates in/out so the badge never loses its centered
+   position */
+.collage-badge {
+  position: absolute; z-index: 3; left: 50%; top: 50%; margin: 0;
+  width: max-content; max-width: 78%;
+  padding: .9rem 1.3rem; border-radius: 14px;
+  background: var(--ink); color: #fff; text-align: center;
+  box-shadow: 0 22px 44px rgba(10,22,24,.3);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.5);
+  transition: opacity .8s cubic-bezier(.22,.68,0,1) .3s, transform .8s cubic-bezier(.22,.68,0,1) .3s;
+  will-change: opacity, transform;
+}
+.collage-badge-eyebrow { display: block; margin-bottom: .25rem; font-size: .6rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; opacity: .68; }
+.collage-badge strong { font-family: "Poppins", Arial, sans-serif; font-size: 1.15rem; font-weight: 600; letter-spacing: -.01em; }
+/* once the frame chapter is active, both squares slide to rest and the
+   badge grows in last, staggered so it reads as pieces arriving one after
+   another rather than all landing at once */
+.story-panel-frame.is-active .collage-main { opacity: 1; transform: translateX(0) scale(1); }
+.story-panel-frame.is-active .collage-accent { opacity: 1; transform: translateX(0) scale(1); transition-delay: .2s; }
+.story-panel-frame.is-active .collage-badge { opacity: 1; transform: translate(-50%, -50%) scale(1); transition-delay: .4s; }
+/* Bonus "exit" beat once you keep scrolling past this last chapter: the
+   right-hand square and the centered badge shrink and drift DOWN toward
+   where the 3-photo frame row (.frame-card-stack — bottom-right on
+   desktop, bottom-center on mobile) fades in, fading out as they go, so
+   it reads as one continuous motion "arriving" at those three frames
+   rather than just vanishing off the top. Timed to finish (~1.6s) right
+   around when .frame-card-stack finishes fading in (.5s delay + .8s
+   fade = 1.3s) for a smooth handoff instead of the two overlapping
+   mid-transition. Meanwhile the left-hand square — the only thing left
+   — smoothly loses its rounded corners as it zooms in to fill the whole
+   screen (the actual "zoom in and take over" scale-up lives on
+   .collage-main in the <style> block, since scaling just that square —
+   not the shared .collage-tilt wrapper — keeps its sibling above from
+   being dragged along by the same zoom). */
+.story-panel-frame.is-frame-exiting .collage-accent {
+  opacity: 0;
+  transform: translate(18vw, 42vh) scale(0.32);
+  transition: opacity 1.6s cubic-bezier(.3,.7,.4,1) .1s, transform 1.6s cubic-bezier(.3,.7,.4,1);
+}
+.story-panel-frame.is-frame-exiting .collage-badge {
+  opacity: 0;
+  transform: translate(-50%, -50%) translate(20vw, 46vh) scale(0.3);
+  transition: opacity 1.6s cubic-bezier(.3,.7,.4,1) .16s, transform 1.6s cubic-bezier(.3,.7,.4,1) .06s;
+}
+.story-panel-frame.is-frame-exiting .collage-main {
+  border-radius: 0;
+}
+
+@media (max-width: 640px) {
+  .collage-tilt { width: 94%; gap: 1rem; }
+  .collage-badge { padding: .7rem 1rem; max-width: 86%; }
+  .collage-badge strong { font-size: .95rem; }
+  /* .frame-card-stack sits bottom-CENTER on phones (not bottom-right like
+     desktop), so the exit drift should head straight down with little/no
+     sideways pull, otherwise it overshoots past the mobile target. */
+  .story-panel-frame.is-frame-exiting .collage-accent { transform: translate(2vw, 40vh) scale(0.32); }
+  .story-panel-frame.is-frame-exiting .collage-badge { transform: translate(-50%, -50%) translate(2vw, 44vh) scale(0.3); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .collage-main, .collage-accent { opacity: 1 !important; transform: none !important; }
+  .collage-badge { opacity: 1 !important; transform: translate(-50%, -50%) !important; }
+  .collage-tilt { transform: none !important; }
+}
+
+.gallery-section { padding-bottom: clamp(3.5rem, 6vw, 5.5rem); }
+.gallery-heading { padding: clamp(3rem, 6vw, 6rem) 0 clamp(3rem, 6vw, 5.5rem) clamp(12%, 17vw, 17rem); }
+.gallery-heading .eyebrow { color: var(--brass); }
+.gallery-heading h2 { max-width: 480px; margin: 1.1rem 0 1.5rem; font-size: clamp(1.5rem, 2.6vw, 2.1rem); }
+.gallery-heading .section-lede { max-width: 22rem; margin: 0; }
+.gallery-grid { display: grid; grid-template-columns: 1.1fr .8fr 1.1fr; grid-template-rows: 250px 250px 250px; gap: 1.1rem; }
+.highlights-gallery-grid { margin-top: clamp(2.5rem, 5vw, 3.8rem); }
+.gallery-item { position: relative; margin: 0; overflow: hidden; background: var(--secondary); }
+.gallery-item img { position: absolute; top: -9%; left: 0; width: 100%; height: 118%; object-fit: cover; transform: translate3d(0, var(--img-drift, 0px), 0) scale(var(--img-scale, 1)); transition: transform .25s var(--ease-out), filter .6s ease; will-change: transform; }
+.gallery-item:hover img { --img-scale: 1.06; filter: saturate(1.08); }
+.gallery-item::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(7,22,25,.38), transparent 45%); pointer-events: none; }
+.gallery-item figcaption { position: absolute; z-index: 1; left: 1rem; bottom: .8rem; color: #fff; font-size: .6rem; font-weight: 700; letter-spacing: .13em; }
+.gallery-tall { grid-row: span 2; }
+.gallery-wide { grid-column: span 2; }
+.gallery-square { grid-column: auto; }
+
+/* "View all" row under the gallery grid. Base look: plain flex row,
+   centered button. */
+.gallery-view-all-row { display: flex; justify-content: center; align-items: center; margin-top: .6rem; }
+.gallery-view-all {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--brass);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Highlights gallery only: the row is now the grid's own last child (see
+   index.html) instead of a sibling after it, on purpose — the masonry mix
+   of tall/wide/square photos packs perfectly on desktop (3 cols x 3 rows,
+   no gaps), so grid-column:1/-1 makes the button span the full width as a
+   row below the last photo, same look as before. On mobile the grid drops
+   to 2 columns with dense auto-flow, and this exact photo order (tall,
+   wide, square, square, wide, square) leaves precisely one empty cell —
+   right beside the last photo. Dropping the grid-column override there
+   (see the mobile media query) lets dense auto-flow place the button
+   straight into that empty cell instead of leaving it blank with the
+   button centered below. */
+.highlights-gallery-grid .gallery-view-all-row { grid-column: 1 / -1; }
+
+/* Final "Joy, Laughter..." gallery — uniform Instagram-style grid (equal
+   square cells, no tall/wide spans) instead of the masonry mix used by
+   Highlights' own gallery-grid, plus its "See more" is now a real boxed
+   button (same .offer-btn-outline component as "View All Rooms") instead
+   of a plain text link. Scoped to .gallery-section only so Highlights'
+   gallery-grid keeps its existing masonry layout and text-link button. */
+.gallery-section .gallery-grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: none; }
+.gallery-section .gallery-tall,
+.gallery-section .gallery-wide,
+.gallery-section .gallery-square { grid-column: auto; grid-row: auto; }
+.gallery-section .gallery-item { aspect-ratio: 1 / 1; }
+.gallery-section .gallery-view-all-row,
+.highlights-section .gallery-view-all-row { margin-top: clamp(1.3rem, 2.6vw, 2rem); }
+
+@media (max-width: 640px) {
+  .gallery-section .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: auto; grid-auto-flow: row; }
+}
+
+.story-section { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); gap: clamp(2.5rem, 9vw, 10rem); align-items: center; padding-bottom: clamp(8rem, 15vw, 15rem); }
+.story-image { position: relative; aspect-ratio: .84; overflow: hidden; }
+.story-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--ease-out); }
+.story-image:hover img { transform: scale(1.045); }
+.image-stamp { position: absolute; right: 1rem; bottom: 1rem; color: #fff; font-size: .58rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; writing-mode: vertical-rl; }
+.story-copy { max-width: 560px; }
+.story-copy .section-index { margin-bottom: clamp(2.8rem, 5vw, 5rem); }
+.story-copy p { max-width: 25rem; margin: 2.7rem 0 0; color: var(--muted-foreground); font-size: .95rem; }
+.story-copy .text-link { margin-top: 2.2rem; }
+
+.celebration-section { padding-bottom: clamp(8rem, 15vw, 15rem); }
+.celebration-card { position: relative; min-height: 570px; overflow: hidden; color: #fff; }
+.celebration-image, .celebration-overlay { position: absolute; inset: 0; }
+.celebration-image { background-position: center; background-size: cover; transition: transform 1s var(--ease-out); }
+.celebration-card:hover .celebration-image { transform: scale(1.04); }
+.celebration-overlay { background: linear-gradient(90deg, rgba(7,26,27,.83), rgba(7,26,27,.16) 78%); }
+.celebration-copy { position: relative; z-index: 1; max-width: 500px; padding: clamp(3rem, 7vw, 7rem) 0 0 clamp(1.25rem, 7vw, 7.5rem); }
+.celebration-copy .eyebrow { color: rgba(255,255,255,.75); }
+.celebration-copy h2 { margin: 1.25rem 0 1.35rem; font-family: "Poppins", Arial, sans-serif; font-size: clamp(3.1rem, 6vw, 6.4rem); font-weight: 500; letter-spacing: -.06em; line-height: .85; }
+.celebration-copy h2 em { color: #fff; }
+.celebration-copy p { max-width: 20rem; margin: 0 0 2rem; color: rgba(255,255,255,.77); font-size: .9rem; }
+
+.closing-section { position: relative; min-height: min(78vh, 760px); display: grid; place-items: center; isolation: isolate; color: #fff; overflow: hidden; }
+.closing-image, .closing-overlay { position: absolute; inset: 0; }
+.closing-image { z-index: -2; background-position: center; background-size: cover; transition: transform 1.2s var(--ease-out); }
+.closing-section:hover .closing-image { transform: scale(1.03); }
+.closing-overlay { z-index: -1; background: linear-gradient(90deg, rgba(12,24,28,.75), rgba(12,24,28,.18)), linear-gradient(0deg, rgba(12,24,28,.52), transparent 55%); }
+.closing-content { width: min(100% - 2.5rem, 1280px); padding-top: 1rem; }
+.closing-content .eyebrow { color: rgba(255,255,255,.7); }
+.closing-content h2 { max-width: 850px; margin: 1.4rem 0 2.5rem; font-family: "Poppins", Arial, sans-serif; font-size: clamp(3.2rem, 7vw, 7.6rem); font-weight: 500; letter-spacing: -.07em; line-height: .84; }
+.closing-content h2 em { color: #fff; }
+
+.site-footer { padding: clamp(4rem, 8vw, 8rem) clamp(1.25rem, 4vw, 4.75rem) 1.5rem; background: var(--ink); color: var(--ivory); }
+.footer-top { display: grid; grid-template-columns: 1fr 1.45fr; gap: 3rem; width: min(100%, 1280px); margin: 0 auto; padding-bottom: clamp(4rem, 8vw, 8rem); }
+.footer-brand { max-width: 340px; }
+.footer-v2-brand-row { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+.footer-mark { width: auto; height: 40px; margin-bottom: 0; opacity: .9; flex-shrink: 0; }
+@media (max-width: 640px) {
+  .footer-mark, .footer-mark-fallback { width: auto; height: 34px; margin-bottom: 0; }
+  .footer-mark-fallback { font-size: 5.8rem; }
+}
+.footer-brand h2 { margin: 0; font-family: "Poppins", Arial, sans-serif; font-size: clamp(2.5rem, 4vw, 4.6rem); font-weight: 500; letter-spacing: -.06em; line-height: .86; }
+.footer-brand h2 em { color: var(--brass); }
+.footer-brand p { margin: 1.5rem 0 0; color: rgba(245,241,232,.58); font-family: "Poppins", Arial, sans-serif; font-size: 1.25rem; }
+.footer-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+.footer-columns > div { display: flex; flex-direction: column; align-items: flex-start; gap: .65rem; }
+.footer-label { margin-bottom: .8rem; color: var(--brass); font-size: .6rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
+.footer-columns a, .footer-columns span, .footer-columns button { display: inline-flex; align-items: center; gap: .55rem; color: rgba(245,241,232,.65); font-size: .78rem; line-height: 1.45; text-align: left; transition: color .2s ease; }
+.footer-columns a:hover, .footer-columns button:hover { color: #fff; }
+.footer-columns button { padding: .65rem .9rem; border: 1px solid rgba(245,241,232,.28); border-radius: 999px; background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.05)); box-shadow: inset 0 1px 0 rgba(255,255,255,.2); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: background .2s ease, border-color .2s ease, color .2s ease, transform .18s var(--ease-out); }
+.footer-columns button:hover { border-color: rgba(186,141,92,.7); background: linear-gradient(135deg, rgba(186,141,92,.42), rgba(255,255,255,.08)); transform: translateY(-2px); }
+.footer-bottom { display: flex; align-items: center; justify-content: space-between; width: min(100%, 1280px); margin: 0 auto; padding-top: 1.15rem; border-top: 1px solid rgba(245,241,232,.18); color: rgba(245,241,232,.45); font-size: .58rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.footer-bottom button { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid rgba(245,241,232,.38); border-radius: 50%; color: var(--ivory); background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.04)); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: background .2s ease, transform .18s var(--ease-out); }
+.footer-bottom button:hover { background: linear-gradient(135deg, rgba(186,141,92,.48), rgba(255,255,255,.08)); transform: translateY(-2px); }
+.rotate-180 { transform: rotate(180deg); }
+
+.booking-backdrop { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; padding: 1.25rem; background: rgba(10,22,24,.56); backdrop-filter: blur(10px); animation: fade-in .25s ease both; }
+.booking-panel { position: relative; width: min(100%, 560px); max-height: calc(100svh - 2.5rem); overflow-y: auto; padding: clamp(2rem, 5vw, 4rem); background: var(--paper); box-shadow: 0 30px 80px rgba(4,16,19,.24); animation: panel-in .45s var(--ease-out) both; }
+.booking-close { position: absolute; top: 1.1rem; right: 1.1rem; display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid rgba(11,110,112,.26); border-radius: 50%; color: var(--ink); background: linear-gradient(135deg, rgba(255,255,255,.72), rgba(208,232,230,.38)); box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 6px 18px rgba(11,110,112,.09); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: background .2s ease, color .2s ease, transform .18s var(--ease-out); }
+.booking-close:hover { color: #fff; background: var(--teal); }
+.booking-panel .eyebrow { color: var(--teal); }
+.booking-panel h2 { max-width: 25rem; margin: 1.1rem 0 1rem; font-family: "Poppins", Arial, sans-serif; font-size: clamp(2.8rem, 6vw, 4.8rem); font-weight: 500; letter-spacing: -.06em; line-height: .86; }
+.booking-panel p { max-width: 27rem; margin: 0 0 2rem; color: var(--muted-foreground); font-size: .88rem; }
+.booking-panel form { display: grid; gap: 1rem; }
+.booking-panel label { display: grid; gap: .42rem; color: var(--ink); font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.booking-panel input, .booking-panel select { width: 100%; min-height: 45px; padding: 0 .8rem; border: 1px solid rgba(23,35,42,.2); border-radius: 0; outline: none; color: var(--ink); background: transparent; font-size: .85rem; font-weight: 400; letter-spacing: 0; text-transform: none; transition: border-color .2s ease, box-shadow .2s ease; }
+.booking-panel input:focus, .booking-panel select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(11,110,112,.12); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-submit { width: fit-content; margin-top: .5rem; }
+.booking-success { min-height: 340px; display: flex; flex-direction: column; justify-content: center; }
+.success-icon { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 1.5rem; border-radius: 50%; color: #fff; background: var(--teal); }
+.booking-success h2 { margin-top: 1rem; }
+
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .8s var(--ease-out), transform .8s var(--ease-out); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+/* headings whose text is split into per-word .word-rise spans (see script.js)
+   skip the block-level fade — the words themselves carry the motion */
+.reveal.has-word-rise { opacity: 1; transform: none; }
+
+/* Cascading stagger for grouped .reveal items (cards, gallery tiles, footer
+   columns) so they rise up one after another instead of all at once — reads
+   as smoother/more intentional, not "laggy". Pure CSS transition-delay, so
+   it costs nothing extra at runtime. */
+.stay-card-grid .reveal:nth-child(1), .gallery-grid .reveal:nth-child(1), .bk-info-grid .reveal:nth-child(1), .footer-v2-grid .reveal:nth-child(1) { transition-delay: 0s; }
+.stay-card-grid .reveal:nth-child(2), .gallery-grid .reveal:nth-child(2), .bk-info-grid .reveal:nth-child(2), .footer-v2-grid .reveal:nth-child(2) { transition-delay: .1s; }
+.stay-card-grid .reveal:nth-child(3), .gallery-grid .reveal:nth-child(3), .bk-info-grid .reveal:nth-child(3), .footer-v2-grid .reveal:nth-child(3) { transition-delay: .2s; }
+.gallery-grid .reveal:nth-child(4), .footer-v2-grid .reveal:nth-child(4) { transition-delay: .3s; }
+.gallery-grid .reveal:nth-child(5) { transition-delay: .4s; }
+.gallery-grid .reveal:nth-child(6) { transition-delay: .5s; }
+@keyframes hero-drift { from { transform: scale(1); } to { transform: scale(1.12); } }
+@keyframes hero-drift-flipped { from { transform: scaleX(-1) scale(1); } to { transform: scaleX(-1) scale(1.12); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes panel-in { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+@media (min-width: 1500px) {
+  .hero-title { font-size: clamp(2.4rem, 3vw, 3.6rem); }
+}
+/* Every .section-shell-based section (Highlights, Gallery, Why Choose Us,
+   Room Offers heading, footer, etc.) should keep expanding to fill the
+   screen on bigger displays instead of sitting centered inside a fixed
+   1280/1440px column with big dead gutters on either side. Fluid,
+   viewport-based width with a generous ceiling, starting from common
+   laptop sizes and scaling further on large/ultrawide monitors.
+   NOTE: overriding `width` here (not just `max-width`) is required —
+   the base .section-shell rule sets `width: min(100% - 2.5rem, 1280px)`
+   directly, and a plain `max-width` bump can never grow a box past a
+   `width` that's already smaller than it. */
+@media (min-width: 1300px) {
+  .section-shell, .motion-content, .closing-content, .footer-top, .footer-bottom { width: min(92vw, 1600px); max-width: none; }
+}
+@media (min-width: 1700px) {
+  .section-shell, .motion-content, .closing-content, .footer-top, .footer-bottom { width: min(93vw, 2000px); max-width: none; }
+}
+@media (min-width: 2100px) {
+  .section-shell, .motion-content, .closing-content, .footer-top, .footer-bottom { width: min(93vw, 2400px); max-width: none; }
+}
+@media (max-width: 900px) {
+  .desktop-nav, .header-cta { display: none; }
+  .menu-trigger { display: grid; }
+  /* Was animated via `max-height` (0 -> 28rem) over 1.5s — max-height is a
+     layout property, so the browser had to recompute layout on nearly
+     every frame of that 1.5-second animation just to open a menu, which is
+     exactly what reads as "laggy". Switched to `transform: scaleY()`
+     (already used for this same menu on book-now.html) so the whole open/
+     close is handled by the compositor — no layout, no repaint — and cut
+     the duration down to something that actually feels instant. */
+  .mobile-menu { position: fixed; z-index: 45; display: block; top: 0; left: 0; right: 0; width: 100%; max-width: none; overflow: hidden; visibility: hidden; border: none; border-radius: 0 0 20px 20px; background: rgba(250,248,244,.96); color: var(--ink); box-shadow: 0 20px 45px rgba(23,35,42,.22); backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%); opacity: 0; transform-origin: top center; transform: scaleY(0); pointer-events: none; will-change: transform, opacity; transition: transform .45s cubic-bezier(.65,0,.35,1), opacity .35s ease, visibility .45s; }
+  .mobile-menu.is-open { visibility: visible; opacity: 1; transform: scaleY(1); pointer-events: auto; overflow-y: auto; transition: transform .45s cubic-bezier(.34,1.2,.4,1), opacity .3s ease; }
+  .mobile-menu-inner { display: block; min-height: 0; background: transparent; padding: 104px 0 8px; box-sizing: border-box; }
+  .mobile-menu .eyebrow, .mobile-book { display: none; }
+  .mobile-menu nav { display: flex; flex-direction: column; margin: 0; }
+  .mobile-menu nav a { display: flex; align-items: center; padding: 1.05rem 1.4rem; border-bottom: 1px solid rgba(20,18,14,.12); font-family: "DM Sans", Arial, Helvetica, sans-serif; font-size: 1rem; font-weight: 500; letter-spacing: 0; line-height: 1; color: #12100d; background: transparent; }
+  .mobile-menu nav a:hover, .mobile-menu nav a:focus { background: rgba(20,18,14,.06); color: #000; }
+  .mobile-menu nav a:last-child { border-bottom: 0; }
+  .mobile-menu nav a span { display: none; }
+  .mobile-book-now { display: block; width: 100%; box-sizing: border-box; text-align: left; align-self: stretch; margin: 0; background: transparent; color: #12100d; border: none; border-top: 1px solid rgba(20,18,14,.12); box-shadow: none; border-radius: 0; padding: 16px 24px; font-family: "DM Sans", sans-serif; font-size: 1rem; font-weight: 400; cursor: pointer; text-decoration: none; }
+  .mobile-book-now:hover { background: rgba(20,18,14,.06); color: #000; }
+  /* Keep header logo + close icon dark, and the header bar pinned solid
+     white, while the menu is open (this dropdown sits directly under it). */
+  .site-shell:has(.mobile-menu.is-open) .site-header .brand-lockup,
+  .site-shell:has(.mobile-menu.is-open) .site-header .brand-type,
+  .site-shell:has(.mobile-menu.is-open) .site-header .brand-type strong { color: #12100d; opacity: 1; visibility: visible; }
+  .site-shell:has(.mobile-menu.is-open) .site-header .brand-mark { filter: brightness(0); }
+  .site-header.is-menu-open .brand-lockup,
+  .site-header.is-menu-open .brand-type,
+  .site-header.is-menu-open .brand-type strong { color: #12100d; opacity: 1; visibility: visible; }
+  .site-header.is-menu-open .brand-mark { filter: brightness(0); }
+  .site-shell:has(.mobile-menu.is-open) .site-header { position: fixed; top: 0; left: 0; right: 0; width: 100%; z-index: 1001; background: rgba(250,248,244,.98); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: none; opacity: 1; visibility: visible; transform: none; }
+  .site-shell:has(.mobile-menu.is-open) .mobile-menu { position: fixed; top: 0; }
+  .mobile-book { align-self: flex-start; }
+  .hero-rail { display: none; }
+  .intro-layout { grid-template-columns: 1fr; gap: 3rem; }
+  .intro-aside { display: flex; align-items: center; gap: 1rem; }
+  .intro-aside .vertical-rule { width: 48px; height: 1px; margin: 0; }
+  .intro-aside p { max-width: 12rem; margin: 0; }
+  .intro-body { padding-left: 0; }
+  .footer-top { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .site-header { padding: 0 1.25rem; }
+  .brand-mark { width: 68px; height: 68px; margin-left: 68px; }
+  .brand-type strong { font-size: 1.1rem; }
+  .hero-section { min-height: 760px; }
+  .hero-content { width: min(100% - 2.5rem, 500px); padding-top: 1rem; }
+  .hero-title { font-size: clamp(2rem, 8vw, 3rem); line-height: 1.55; margin-bottom: 1.6rem; }
+  .hero-title-break { display: block; }
+  .hero-copy { max-width: 17rem; font-size: .9rem; }
+  .hero-actions { margin-top: 1.8rem; }
+  .hero-bottomline { bottom: 1.5rem; font-size: .5rem; }
+  .hero-bottomline > span:first-child { display: none; }
+  .hero-bottomline { justify-content: flex-end; }
+  .section-shell { width: min(100% - 2.5rem, 1280px); }
+  .section-index { font-size: .56rem; }
+  .intro-section, .highlights-section, .gallery-section { padding-top: 5.5rem; padding-bottom: 6.5rem; }
+  .intro-layout { padding-top: 2.8rem; }
+  .display-heading { font-size: clamp(3.25rem, 15vw, 5.1rem); }
+  .intro-body { grid-template-columns: 1fr; gap: 1.2rem; margin-top: 3rem; }
+  .intro-body p + p { margin-top: 0; }
+  .motion-section { min-height: 590px; }
+  .motion-content { width: min(100% - 2.5rem, 1280px); }
+  .motion-content h2 { font-size: clamp(3.45rem, 15vw, 5.6rem); }
+  .motion-caption { right: 1.25rem; bottom: 1.4rem; font-size: .5rem; }
+  .section-heading-row { display: block; padding-top: 2.8rem; padding-bottom: 3.5rem; }
+  .section-lede { margin-top: 1.8rem; }
+  .stay-card-grid {
+    display: flex;
+    grid-template-columns: unset;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 1rem;
+    margin: 0 -1.25rem;
+    padding: 0 1.25rem 1rem;
+    scrollbar-width: none;
+  }
+  .stay-card-grid::-webkit-scrollbar { display: none; }
+  .stay-card {
+    flex: 0 0 84%;
+    scroll-snap-align: center;
+  }
+  .stay-card.card-offset-2, .stay-card.card-offset-3 { margin-top: 0; }
+  .card-image-wrap { aspect-ratio: 1.08; }
+  .card-copy { padding-top: 1rem; }
+  .card-copy h3 { font-size: 1.8rem; }
+  .offer-section, .story-section, .celebration-section { padding-bottom: 6.5rem; }
+  .offer-frame, .celebration-card { min-height: 590px; }
+  .offer-copy, .celebration-copy { padding: 3rem 1.25rem 0; }
+  .offer-copy h2, .celebration-copy h2 { font-size: clamp(3.5rem, 16vw, 5.6rem); }
+  .offer-note { right: 1.25rem; bottom: 1.35rem; max-width: 12rem; text-align: right; line-height: 1.4; }
+  .gallery-heading { padding: 2.8rem 0 3.5rem; }
+  .gallery-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 170px; grid-auto-flow: dense; gap: .75rem; }
+  .gallery-section .gallery-view-all-row { margin-top: 1.1rem; }
+  /* Drop the full-width span from desktop so this cell-sized row falls
+     into the one empty cell dense auto-flow leaves next to the last
+     photo (see comment above .highlights-gallery-grid .gallery-view-all-row). */
+  .highlights-gallery-grid .gallery-view-all-row { grid-column: auto; grid-row: auto; margin-top: 2.8rem; }
+  .story-section { grid-template-columns: 1fr; gap: 3.8rem; }
+  .story-image { aspect-ratio: 1.05; }
+  .story-copy .section-index { margin-bottom: 2.8rem; }
+  .story-copy p { margin-top: 2rem; }
+  .closing-section { min-height: 680px; }
+  .closing-content h2 { font-size: clamp(3.7rem, 17vw, 6.2rem); }
+  .footer-columns { grid-template-columns: 1fr 1fr; gap: 2.5rem 1rem; }
+  .footer-columns > div:last-child { grid-column: span 2; }
+  .footer-bottom { align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+  .footer-bottom span:nth-child(2) { max-width: 10rem; margin-left: auto; text-align: right; }
+  .booking-panel { padding: 2.4rem 1.35rem 1.6rem; }
+  .form-row { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .reveal { opacity: 1; transform: none; }
+}
+
+/* Standalone Live Server utilities: preserve the same island mark and interaction polish without framework dependencies. */
+.brand-mark-fallback, .footer-mark-fallback { display: inline-grid; place-items: center; color: currentColor; font-size: 1.55rem; line-height: 1; }
+.brand-mark-fallback { width: 27px; height: 27px; color: #fff; font-family: Georgia, serif; font-size: 1.55rem; }
+.site-header.is-scrolled .brand-mark-fallback { color: var(--teal); }
+.footer-mark-fallback { width: 192px; height: 192px; margin-bottom: 1.8rem; color: var(--brass); font-family: Georgia, serif; font-size: 7.6rem; }
+.button span, .header-cta span, .text-link span { transition: transform .25s var(--ease-out); }
+.button:hover span, .header-cta:hover span, .text-link:hover span { transform: translateX(3px); }
+[hidden] { display: none !important; }
+
+/* Editorial Island Luxury: text-only chapters use plain white paper, centered hierarchy, and calm editorial spacing. */
+.site-shell { background: #fff; }
+.intro-section, .highlights-section, .gallery-section { background: #fff; }
+.intro-section .section-index { display: none; }
+.intro-layout { display: block; padding-top: clamp(3rem, 6vw, 5rem); }
+.intro-aside { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; text-align: center; }
+.intro-aside .eyebrow { color: var(--brass); }
+.intro-aside .vertical-rule { width: 70px; height: 3px; margin: 2.2rem auto 0; background: #a99a83; }
+.intro-aside p { display: none; }
+.intro-copy { max-width: none; margin-top: 1.9rem; text-align: center; }
+.intro-copy .display-heading { color: #17232a; max-width: 900px; margin-inline: auto; font-size: clamp(1.5rem, 2.6vw, 2.1rem); }
+.intro-copy .display-heading em { color: #17232a; font-style: normal; font-weight: 600; }
+.intro-body { display: block; max-width: 1120px; margin: clamp(2.4rem, 4.5vw, 4rem) auto 0; padding: 0; text-align: center; }
+.intro-body > p { max-width: 1080px; margin: 0 auto; color: #4d5961; font-size: .86rem; line-height: 1.75; }
+.intro-body > div { max-width: 1080px; margin: .35rem auto 0; }
+.intro-body p + p { max-width: 1080px; margin: 0 auto; color: #4d5961; font-family: "DM Sans", Arial, sans-serif; font-size: .86rem; line-height: 1.75; }
+.intro-body .text-link { margin-top: 2rem; }
+.section-heading-row { display: block; text-align: center; }
+.section-heading-row h2 { max-width: 800px; margin-inline: auto; }
+.section-heading-row .section-lede { max-width: 24rem; margin: 1.6rem auto 0; }
+.gallery-heading { padding-left: 0; text-align: center; }
+.gallery-heading h2 { margin-inline: auto; }
+.gallery-heading .section-lede { margin-inline: auto; }
+@media (max-width: 640px) {
+  .intro-copy { margin-top: 1.5rem; }
+  .intro-body { margin-top: 2rem; }
+  .intro-body > p, .intro-body p + p { line-height: 1.65; }
+}
+
+/* Editorial Island Luxury: the navigation sits on plain white paper with dark ink contrast; the CTA remains frosted glass. */
+.site-header, .site-header.is-scrolled { background: #fff; color: var(--ink); border-bottom: none; box-shadow: 0 8px 26px rgba(23,35,42,.06); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.site-header .brand-mark { filter: none; }
+.site-header .brand-mark-fallback { color: var(--teal); }
+.site-header .header-cta { border-color: rgba(11,110,112,.22); background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(208,232,230,.62)); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.98), 0 7px 20px rgba(11,110,112,.08); }
+.site-header .header-cta:hover { background: linear-gradient(135deg, rgba(255,255,255,1), rgba(186,141,92,.52)); }
+
+/* Final navbar rule: always solid white, never transparent, regardless of scroll or breakpoint. */
+.site-header, .site-header.is-scrolled { background-color: #fff !important; background-image: none !important; color: var(--ink) !important; opacity: 1; }
+.site-header .desktop-nav a, .site-header .brand-type { color: var(--ink); }
+
+/* Reference navbar behavior: transparent over the hero, solid white after the user scrolls. */
+.site-header:not(.is-scrolled) { background-color: transparent !important; background-image: none !important; color: #fff !important; border-bottom: none; box-shadow: none; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.site-header:not(.is-scrolled) .desktop-nav a, .site-header:not(.is-scrolled) .brand-type { color: #fff; }
+.site-header:not(.is-scrolled) .brand-mark { filter: none; }
+.site-header:not(.is-scrolled) .brand-mark-fallback { color: #fff; }
+.site-header:not(.is-scrolled) .header-cta { border-color: rgba(255,255,255,.5); background: linear-gradient(135deg, rgba(255,255,255,.7), rgba(255,255,255,.25)); color: #fff; }
+.site-header.is-scrolled { background-color: #fff !important; color: var(--ink) !important; border-bottom: none; box-shadow: 0 8px 26px rgba(23,35,42,.06); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.site-header.is-scrolled .desktop-nav a, .site-header.is-scrolled .brand-type { color: var(--ink); }
+.site-header.is-scrolled .brand-mark { filter: brightness(0); }
+.site-header.is-scrolled .brand-mark-fallback { color: var(--teal); }
+
+/* Editorial Island Luxury: gently lift the hero copy so its optical center sits above the image midpoint. */
+.hero-content { transform: translateY(0); }
+@media (max-width: 640px) { .hero-content { transform: translateY(0); } }
+
+/* Editorial Island Luxury: the hero descriptor stays quiet and single-line on desktop, then wraps safely on compact screens. */
+.hero-copy { max-width: none; white-space: nowrap; font-size: clamp(.76rem, 1vw, .92rem); }
+@media (max-width: 640px) { .hero-copy { max-width: 18rem; white-space: normal; font-size: .84rem; } }
+/* on mobile the glass button's top inset highlight reads as an odd mirror-
+   like sheen across the pill — flatten it to a plain translucent fill with
+   just the outer drop shadow, no inset line, no gradient. */
+@media (max-width: 640px) {
+  .hero-explore-btn { background: linear-gradient(135deg, rgba(11,110,112,.97), rgba(4,38,46,.97)); border-color: rgba(255,255,255,.8); box-shadow: 0 9px 25px rgba(0,0,0,.5); backdrop-filter: blur(18px) saturate(150%); -webkit-backdrop-filter: blur(18px) saturate(150%); }
+}
+
+/* Editorial Island Luxury: ocean-blue ink and sea-glass white define the palette across paper sections and CTAs. */
+:root { --ocean-blue: #0b6170; --ocean-deep: #073d4a; --ocean-mist: #e8f4f4; --ocean-line: #9bc5c7; }
+.intro-section, .highlights-section, .gallery-section { background: #fff; color: var(--ink); }
+.intro-aside .eyebrow, .section-index, .section-index span, .section-lede, .card-copy p, .intro-body > p, .intro-body p + p { color: var(--muted-foreground); }
+.intro-copy .display-heading, .intro-copy .display-heading em, .section-heading-row h2, .gallery-heading h2, .card-copy h3 { color: var(--ink); }
+.intro-aside .vertical-rule { background: var(--brass); }
+.text-link { color: var(--ink); border-bottom-color: var(--brass); }
+.text-link:hover { color: var(--muted-foreground); border-bottom-color: var(--brass); }
+.button-light, .button-dark { border-color: rgba(255,255,255,.48); background: linear-gradient(135deg, rgba(11,97,112,.94), rgba(7,61,74,.96)); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.34), 0 12px 28px rgba(7,61,74,.18); }
+.button-light:hover, .button-dark:hover { border-color: rgba(255,255,255,.78); background: linear-gradient(135deg, #0b7180, #0a4b5a); color: #fff; }
+.site-header.is-scrolled .header-cta { border-color: rgba(255,255,255,.44); background: linear-gradient(135deg, var(--ocean-blue), var(--ocean-deep)); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 8px 22px rgba(7,61,74,.18); }
+.site-header.is-scrolled .header-cta:hover { background: linear-gradient(135deg, #0b7180, #0a4b5a); color: #fff; }
+.footer-section { background: var(--ocean-deep); }
+
+/* Editorial Island Luxury: every text block on white paper is centered for a unified editorial rhythm. */
+.intro-section, .highlights-section, .gallery-section { text-align: center; }
+.intro-section .intro-layout, .intro-section .intro-aside, .intro-section .intro-copy, .intro-section .intro-body, .intro-section .intro-body > div { text-align: center; }
+.intro-section .intro-body .text-link { display: inline-flex; margin-inline: auto; }
+.highlights-section .section-heading-row, .highlights-section .section-heading-row h2, .highlights-section .section-heading-row .section-lede { text-align: center; }
+.highlights-section .stay-card-grid { text-align: center; }
+.highlights-section .card-copy, .highlights-section .card-copy h3, .highlights-section .card-copy p { text-align: center; }
+.gallery-section .gallery-heading, .gallery-section .gallery-heading h2, .gallery-section .gallery-heading .section-lede { text-align: center; }
+@media (max-width: 640px) {
+  .intro-section, .highlights-section, .gallery-section { text-align: center; }
+  .intro-section .intro-body, .intro-section .intro-body > div, .highlights-section .card-copy { text-align: center; }
+}
+
+/* Editorial Island Luxury: the Highlights eyebrow is centered, spaced, and quiet above the section title. */
+.highlights-eyebrow { display: block; margin-bottom: 1.1rem; color: #9d8d78; }
+
+/* Editorial Island Luxury: About, Gallery, Experience, and Contact share one centered section rhythm. */
+.gallery-section > .section-index { display: none; }
+.gallery-section .gallery-heading { padding-top: clamp(3rem, 6vw, 5rem); }
+.offer-copy { left: 50%; width: min(100% - 2.5rem, 620px); display: flex; flex-direction: column; align-items: center; text-align: center; transform: translate(-50%, -50%); }
+.offer-copy .eyebrow, .offer-copy h2, .offer-copy p { text-align: center; }
+.offer-copy .button { margin-inline: auto; }
+.offer-note { left: 50%; transform: translateX(-50%); text-align: center; }
+.site-footer { text-align: center; }
+.footer-top { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.footer-brand, .footer-brand h2, .footer-brand p, .footer-columns, .footer-columns > div, .footer-label { text-align: center; }
+.footer-columns { justify-content: center; width: 100%; }
+.footer-bottom { justify-content: center; text-align: center; }
+@media (max-width: 640px) {
+  .offer-copy { width: min(100% - 2rem, 25rem); }
+  .footer-columns { grid-template-columns: 1fr; justify-items: center; gap: 1.5rem; }
+  .footer-bottom { flex-direction: column; gap: .7rem; }
+}
+
+/* Editorial Island Luxury: section eyebrows share one brass ink color. */
+.intro-aside .eyebrow, .highlights-eyebrow { color: var(--brass) !important; }
+
+/* Editorial Island Luxury: sample-matched typography uses clean sans-serif geometry, bold display weight, and calm uppercase labels. */
+body, .site-shell, .site-header, button, input, textarea { font-family: "DM Sans", Arial, Helvetica, sans-serif; }
+.hero-title, .display-heading, .motion-content h2, .offer-copy h2, .story-copy h2, .closing-content h2, .footer-brand h2, .footer-brand h2 em, .card-copy h3 { font-family: "DM Sans", Arial, Helvetica, sans-serif; font-style: normal; font-weight: 700; letter-spacing: -.045em; line-height: 1.04; }
+.hero-title { line-height: 1.3; }
+/* Mobile: the custom Agraham display face has tall swashes/ascenders that
+   still crowd the two title lines together even at line-height 1.3 on
+   larger screens — mobile needs noticeably more room between "Dhaankolhu"
+   and "Rasdhoo", plus more breathing space before the subtitle below.
+   Placed after the unconditional rule above so it wins the cascade on
+   small screens without touching desktop spacing. */
+@media (max-width: 640px) {
+  .hero-title { line-height: 1.55; margin: .9rem auto 1.6rem; }
+}
+.hero-title em, .display-heading em, .motion-content h2 em, .offer-copy h2 em, .story-copy h2 em, .closing-content h2 em { font-family: inherit; font-style: normal; font-weight: 700; }
+.brand-type strong, .brand-type small, .desktop-nav a, .eyebrow, .button, .header-cta, .section-index, .card-number, .card-arrow, .footer-label, .footer-bottom { font-family: "DM Sans", Arial, Helvetica, sans-serif; }
+.eyebrow { font-weight: 700; letter-spacing: .22em; }
+.hero-eyebrow { color: rgba(255,255,255,.85) !important; }
+.hero-copy, .intro-body, .section-lede, .card-copy p, .offer-copy p, .story-copy p, .footer-brand p, .footer-columns, .motion-content p { font-family: "DM Sans", Arial, Helvetica, sans-serif; font-style: normal; }
+
+/* Luxury resort touch: page headers get an elegant serif display face instead
+   of the site's default geometric sans, giving them a more premium,
+   resort-editorial feel. Body copy/descriptions stay on the sans-serif font. */
+.display-heading, .motion-content h2, .offer-copy h2, .story-copy h2, .closing-content h2, .footer-brand h2, .card-copy h3, .celebration-copy h2, .excursion-row-copy h3 { font-family: "Playfair Display", Georgia, serif; font-weight: 600; letter-spacing: -.02em; line-height: 1.18; }
+/* Custom luxury display font (client-supplied, commercially licensed) —
+   used on the hero header only; every other heading keeps Playfair Display. */
+@font-face {
+  font-family: "Agraham";
+  src: url("fonts/Agraham.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+.hero-title { font-family: "Agraham", "Playfair Display", Georgia, serif; font-weight: 400; letter-spacing: 0; }
+.hero-title em, .display-heading em, .motion-content h2 em, .offer-copy h2 em, .story-copy h2 em, .closing-content h2 em, .footer-brand h2 em { font-family: inherit; font-weight: 600; }
+
+/* Uniform small text sizing for header nav and footer content, as requested. */
+.brand-type strong { font-size: .95rem; }
+.brand-type small { font-size: .5rem; }
+.desktop-nav a { font-size: .78rem; }
+.header-cta { font-size: .7rem; }
+
+.footer-brand h2 { font-size: 1.6rem; letter-spacing: -.02em; line-height: 1.15; }
+.footer-brand p { font-size: .82rem; }
+.footer-label { font-size: .7rem; }
+.footer-columns a, .footer-columns span, .footer-columns button { font-size: .8rem; }
+.footer-bottom { font-size: .7rem; }
+
+/* Remove the vertical rule under the "An island in its own time" eyebrow and tighten the gap to the heading below it. */
+.intro-aside .vertical-rule { display: none; }
+.intro-copy { margin-top: .6rem; }
+
+/* Shrink the "Where the day moves at water speed." motion section heading and supporting text. */
+.motion-content h2 { font-size: clamp(2.2rem, 4.5vw, 4.2rem); }
+.motion-content .eyebrow { font-size: .58rem; }
+.motion-content p { font-size: .62rem; }
+@media (max-width: 640px) {
+  .motion-content h2 { font-size: clamp(2rem, 9vw, 2.9rem); }
+}
+
+/* New "Discover Dhaankolhu Rasdhoo Island in Motion" video showcase section, replacing the old film scroller. */
+.video-section { padding: clamp(6rem, 11vw, 10rem) 0 clamp(5rem, 10vw, 9rem); background: var(--ivory); }
+.video-section-inner { text-align: center; }
+.video-section-heading { max-width: 760px; margin: 0 auto clamp(2.2rem, 4.5vw, 3.2rem); text-align: center; }
+.video-section-heading .eyebrow { display: block; margin-bottom: 1.1rem; color: var(--brass); }
+.video-section-heading h2 { color: var(--ink); font-size: clamp(1.1rem, 2.2vw, 1.9rem); white-space: nowrap; }
+.video-section-heading h2 em { color: var(--ink); }
+.video-frame { position: relative; overflow: hidden; border-radius: 16px; aspect-ratio: 16 / 9; background: #1c1c1c; max-width: 860px; margin: 0 auto; }
+.video-frame img { width: 100%; height: 100%; object-fit: cover; opacity: .82; transition: transform .8s var(--ease-out), opacity .3s ease; }
+.video-frame:hover img { transform: scale(1.03); opacity: .9; }
+.video-play-button { position: absolute; right: 1.5rem; bottom: 1.5rem; display: grid; place-items: center; width: 52px; height: 52px; padding-left: 3px; border: 1px solid rgba(255,255,255,.35); border-radius: 12px; color: #fff; background: rgba(20,20,20,.55); backdrop-filter: blur(10px); font-size: .95rem; transition: background .25s ease, transform .2s var(--ease-out); }
+.video-play-button:hover { background: var(--brass); transform: scale(1.05); }
+.video-caption { max-width: 640px; margin: clamp(1.6rem, 3vw, 2.2rem) auto 0; color: var(--muted-foreground); font-size: .9rem; line-height: 1.7; }
+.video-credit { max-width: 640px; margin: .6rem auto 0; color: var(--muted-foreground); opacity: .7; font-size: .78rem; line-height: 1.6; }
+.video-credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.video-credit a:hover { color: var(--ink); }
+
+/* --- Video frame: ambient glow + viewfinder corners + location badge --- */
+.video-frame-wrap { position: relative; max-width: 900px; margin: 0 auto; }
+.video-frame-wrap::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  z-index: -1;
+  background: radial-gradient(60% 60% at 50% 45%, rgba(186,141,92,.22), transparent 72%);
+  filter: blur(18px);
+}
+.video-corner {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--brass);
+  z-index: 2;
+  pointer-events: none;
+}
+.video-corner-tl { top: -14px; left: -14px; border-right: none; border-bottom: none; border-radius: 8px 0 0 0; }
+.video-corner-br { bottom: -14px; right: -14px; border-left: none; border-top: none; border-radius: 0 0 8px 0; }
+.video-frame-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(18,61,64,0) 42%, rgba(11,25,27,.58) 100%);
+  pointer-events: none;
+}
+.video-watch-badge {
+  position: absolute;
+  left: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 1;
+  padding: .7rem 1.1rem;
+  border-radius: 12px;
+  background: rgba(20,20,20,.42);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  text-align: left;
+}
+.video-watch-badge-eyebrow { display: block; margin-bottom: .2rem; font-size: .58rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; opacity: .72; }
+.video-watch-badge strong { font-family: "Poppins", Arial, sans-serif; font-size: 1rem; font-weight: 600; letter-spacing: -.01em; }
+@media (max-width: 640px) {
+  .video-corner { width: 26px; height: 26px; }
+  .video-corner-tl { top: -10px; left: -10px; }
+  .video-corner-br { bottom: -10px; right: -10px; }
+  .video-watch-badge { left: 1rem; bottom: 1rem; padding: .55rem .85rem; }
+  .video-watch-badge strong { font-size: .85rem; }
+}
+@media (max-width: 640px) {
+  .video-section-heading h2 { white-space: normal; font-size: clamp(1.5rem, 7vw, 2.1rem); }
+  .video-frame { aspect-ratio: 16 / 10; border-radius: 12px; max-width: 100%; }
+  .video-play-button { width: 46px; height: 46px; right: 1rem; bottom: 1rem; }
+}
+
+/* Fill the video frame with the YouTube iframe once it's clicked to play. */
+.video-frame { cursor: pointer; }
+.video-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+/* Header size matched to the Gallery heading so all section titles read the same scale. */
+.highlights-heading { max-width: 900px; white-space: normal; font-size: clamp(1.5rem, 2.6vw, 2.1rem); }
+
+/* Redesign the highlight cards: rounded images, left-aligned titles and copy, no number/arrow overlay. */
+.card-image-wrap { border-radius: 0; aspect-ratio: 16 / 9; }
+.card-image-wrap::after { display: none; }
+.card-copy { text-align: left; padding: 1.1rem 0 0; }
+.card-copy h3 { font-size: 1.35rem; }
+.card-copy p { max-width: none; text-align: left; }
+.highlights-section .card-copy, .highlights-section .card-copy h3, .highlights-section .card-copy p { text-align: left; }
+
+/* ==========================================================================
+   Highlights cards (Sunset Swing / Island From Above / Snorkeling the
+   Lagoon) — the title now sits baked onto the photo itself instead of as
+   plain text underneath it, and hovering smoothly darkens the photo and
+   reveals the description + a "Find Out More" cta beneath the title —
+   same idea as the Adaaran-style highlight tiles. Scoped to
+   .highlights-section .stay-card specifically (and carries higher
+   specificity than the unscoped .card-image-wrap/.card-copy rules just
+   above) so "Why Choose Us" further down, which reuses the exact same
+   .stay-card markup, is untouched and keeps its plain photo-then-text
+   layout.
+   ========================================================================== */
+.highlights-section .stay-card { position: relative; }
+.highlights-section .stay-card .card-image-wrap { aspect-ratio: .82; }
+.highlights-section .stay-card .card-image-wrap::after {
+  display: block;
+  background: linear-gradient(0deg, rgba(7,22,25,.82) 0%, rgba(7,22,25,.38) 42%, rgba(7,22,25,0) 70%);
+  transition: background .5s var(--ease-out);
+}
+.highlights-section .stay-card:hover .card-image-wrap::after,
+.highlights-section .stay-card:focus-within .card-image-wrap::after {
+  background: linear-gradient(0deg, rgba(7,22,25,.92) 0%, rgba(7,22,25,.6) 55%, rgba(7,22,25,.05) 100%);
+}
+
+.highlights-section .stay-card .card-copy {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(1.3rem, 2.4vw, 1.9rem) clamp(1.2rem, 2.2vw, 1.7rem) clamp(1.5rem, 2.6vw, 2rem);
+  color: #fff;
+}
+.highlights-section .stay-card .card-tag {
+  display: block;
+  margin-bottom: .5rem;
+  font-family: "DM Sans", Arial, Helvetica, sans-serif;
+  font-size: .66rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.82);
+}
+.highlights-section .stay-card .card-copy h3 { margin: 0; color: #fff; font-size: clamp(1.3rem, 2.2vw, 1.6rem); }
+
+/* The description + cta live inside a grid row that's collapsed to 0fr by
+   default and expands to 1fr on hover — a pure-CSS height animation
+   (no fixed max-height guess needed) that reads as the panel "growing"
+   open, pushing the title up slightly as it does. */
+.highlights-section .stay-card .card-hover-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  width: 100%;
+  opacity: 0;
+  transition: grid-template-rows .5s var(--ease-out), opacity .4s ease;
+}
+.highlights-section .stay-card:hover .card-hover-reveal,
+.highlights-section .stay-card:focus-within .card-hover-reveal {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.highlights-section .stay-card .card-hover-reveal-inner { overflow: hidden; }
+.highlights-section .stay-card .card-copy p {
+  margin: .85rem 0 0;
+  max-width: none;
+  color: rgba(255,255,255,.88);
+  font-size: .82rem;
+  line-height: 1.6;
+}
+.highlights-section .stay-card .card-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.1rem;
+  padding: .6rem 1.25rem;
+  background: var(--brass);
+  color: #fff;
+  font-family: "DM Sans", Arial, Helvetica, sans-serif;
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition: background .2s ease, transform .2s var(--ease-out);
+}
+.highlights-section .stay-card:hover .card-cta,
+.highlights-section .stay-card:focus-within .card-cta { transform: translateY(-1px); }
+
+/* Touch devices can't hover, so show the description + cta right away
+   instead of hiding content behind an interaction that can't happen there
+   — tapping the card still opens the full detail view as normal. */
+@media (hover: none) {
+  .highlights-section .stay-card .card-hover-reveal { grid-template-rows: 1fr; opacity: 1; }
+  .highlights-section .stay-card .card-image-wrap::after { background: linear-gradient(0deg, rgba(7,22,25,.88) 0%, rgba(7,22,25,.45) 50%, rgba(7,22,25,.05) 100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .highlights-section .stay-card .card-image-wrap::after,
+  .highlights-section .stay-card .card-hover-reveal,
+  .highlights-section .stay-card .card-cta { transition: none; }
+}
+
+/* Even out the highlight cards so all three sit at the same height, no staggered offsets. */
+.stay-card.card-offset-2, .stay-card.card-offset-3 { margin-top: 0; }
+
+/* Image slideshow with badge, heading, copy, CTA, and dot navigation, replacing the static offer banner. */
+.slideshow-section { padding-bottom: clamp(3rem, 6vw, 6rem); }
+/* Location / map section — replaces the full-bleed banner that used to sit
+   below Island Activities. Heading matches the Experience section's centered,
+   single-line treatment; the map itself is edge-to-edge, no frame/border. */
+.location-section { padding-bottom: clamp(3rem, 6vw, 6rem); }
+.location-section .section-heading-row { padding-top: clamp(2rem, 4vw, 3rem); margin-bottom: clamp(1.6rem, 3vw, 2.6rem); text-align: center; }
+.location-section .eyebrow { color: var(--brass); margin-bottom: 1.1rem; }
+.location-section .display-heading { font-size: clamp(1.5rem, 2.6vw, 2.1rem); white-space: nowrap; }
+.location-section .section-lede { max-width: none; margin: .9rem auto 0; }
+.location-frame { position: relative; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; }
+.location-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+.location-cta-row { margin-top: clamp(1.8rem, 3.5vw, 2.6rem); text-align: center; }
+@media (max-width: 640px) {
+  .location-section .display-heading { white-space: normal; font-size: clamp(1.5rem, 7vw, 2.1rem); }
+  .location-frame { height: 100vh; height: 100dvh; } /* dvh, not svh — svh freezes at the
+    smallest possible height, leaving a gap once the address bar auto-hides */
+}
+/* heading row was removed from this section (no title/eyebrow above the
+   slideshow anymore) — add back a bit of breathing room above it since it
+   no longer inherits spacing from the heading row that used to precede it. */
+.slideshow-section { padding-top: clamp(2.5rem, 5vw, 4rem); }
+.slideshow { position: relative; }
+.slideshow-track { position: relative; min-height: 342px; overflow: hidden; border-radius: 16px; }
+.slide { position: absolute; inset: 0; display: flex; align-items: center; background-position: center; background-size: cover; color: #fff; opacity: 0; visibility: hidden; transition: opacity 1.5s var(--ease-out), visibility 1.5s var(--ease-out); }
+.slide.is-active { opacity: 1; visibility: visible; z-index: 1; }
+.slide-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(11,30,31,.78) 0%, rgba(11,30,31,.24) 46%, rgba(11,30,31,.05) 70%); }
+.slide-content { position: relative; z-index: 1; width: min(100% - 2.5rem, 620px); padding: 0 0 0 clamp(1.5rem, 4vw, 3.5rem); }
+.slide-badge { display: inline-block; margin-bottom: .6rem; padding: .35rem .8rem; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; background: rgba(255,255,255,.12); backdrop-filter: blur(8px); font-size: .58rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.slide-content h2 { margin: 0 0 .55rem; font-family: "DM Sans", Arial, Helvetica, sans-serif; font-weight: 700; letter-spacing: -.03em; line-height: 1.06; font-size: clamp(1.3rem, 2.6vw, 2.1rem); }
+.slide-content p { max-width: 30rem; margin: 0 0 .8rem; color: rgba(255,255,255,.82); font-size: .82rem; line-height: 1.5; }
+.slide-cta { display: inline-flex; align-items: center; min-height: 36px; padding: 0 1.15rem; border: 0; border-radius: 999px; background: #fff; color: var(--ink); font-size: .74rem; font-weight: 700; transition: transform .18s var(--ease-out), background .2s ease; }
+.slide-cta:hover { background: var(--brass); color: #fff; transform: translateY(-2px); }
+/* Dots + line loader now sit together, bottom-left, instead of the dots
+   being centered — .slideshow-dots is no longer absolutely positioned on
+   its own; it's a normal flex child of .slideshow-nav-left below. */
+.slideshow-nav-left { position: absolute; left: clamp(1.2rem, 3vw, 2rem); bottom: 1.3rem; z-index: 2; display: flex; align-items: center; }
+.slideshow-dots { position: static; display: flex; align-items: center; gap: .5rem; transform: none; }
+/* Full-width loading line across the very top of the slideshow, filling
+   left-to-right over each slide's 6s dwell time and resetting on every
+   slide change (restarted in script.js). */
+.slideshow-top-loader { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; z-index: 2; background: rgba(255,255,255,.25); overflow: hidden; }
+.slideshow-top-loader-fill { position: absolute; inset: 0 auto 0 0; width: 0%; height: 100%; background: #fff; }
+/* Dots are now a plain, simple on/off switch — no per-dot progress ring —
+   just a smooth width/opacity/background transition between states. */
+.dot { position: relative; width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: rgba(255,255,255,.42); opacity: .8; transition: width .35s var(--ease-out), background .35s ease, opacity .35s ease; }
+.dot.is-active { width: 22px; background: #fff; opacity: 1; }
+.dot:hover, .dot:focus-visible { opacity: 1; }
+/* Centered "Discover the Island" caption over the slideshow photos. */
+.slideshow-center-text { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; padding: 0 1.5rem; pointer-events: none; font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: clamp(1.9rem, 4.2vw, 3.2rem); color: #fff; text-align: center; text-shadow: 0 2px 22px rgba(0,0,0,.5); }
+@media (max-width: 640px) { .slideshow-nav-left { left: clamp(1rem, 4vw, 1.4rem); bottom: 1.1rem; } }
+/* "Explore Rasdhoo" CTA, overlaid inside the slideshow photos (not tied to
+   any one slide — sits above all 3 so it reads correctly regardless of
+   which photo is currently showing). Right-aligned so it never collides
+   with the centered dots. Pulsing "wave" rings (like sonar/ripples)
+   expand outward from the pill on a loop to draw the eye to it. */
+.slideshow-explore-cta { position: absolute; right: clamp(1.2rem, 3vw, 2rem); bottom: 1.3rem; z-index: 2; }
+.slideshow-explore-cta::before,
+.slideshow-explore-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1.5px solid rgba(255,255,255,.85);
+  pointer-events: none;
+  animation: slideshowCtaWave 2.6s ease-out infinite;
+}
+.slideshow-explore-cta::after { animation-delay: 1.3s; }
+@keyframes slideshowCtaWave {
+  0%   { transform: scale(1);    opacity: .65; }
+  70%  { transform: scale(1.35); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slideshow-explore-cta::before, .slideshow-explore-cta::after { animation: none; display: none; }
+}
+@media (max-width: 640px) { .slideshow-explore-cta { right: clamp(1rem, 4vw, 1.4rem); bottom: 1.1rem; } }
+@media (prefers-reduced-motion: reduce) {
+  .slideshow-top-loader-fill { transition: none !important; width: 100% !important; }
+}
+@media (max-width: 640px) {
+  .slideshow-track { min-height: 312px; border-radius: 12px; }
+  .slide-content { padding-bottom: 0; }
+}
+
+/* Header redesign to match reference: larger brand, plain-case nav links, solid dark "Book Now" pill. */
+.brand-type strong { font-size: 1.02rem; font-weight: 700; letter-spacing: -.02em; }
+.brand-type small { margin-top: .25rem; font-size: .46rem; letter-spacing: .16em; color: var(--brass); opacity: 1; }
+.desktop-nav { gap: clamp(1.3rem, 2.6vw, 2.2rem); }
+.desktop-nav a { font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+.desktop-nav a:hover { opacity: 1; }
+.header-cta { min-height: 36px; padding: .6rem 1.2rem; border-radius: 0; border: 0; background: var(--ink); background-image: none; color: #fff; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.header-cta:hover { background: var(--teal); color: #fff; box-shadow: none; }
+.site-header.is-scrolled .header-cta { background: var(--ink); background-image: none; color: #fff; box-shadow: none; }
+.site-header.is-scrolled .header-cta:hover { background: var(--teal); }
+
+/* Header starts tall at the top of the page, then smoothly shrinks to a compact bar once scrolled. */
+.site-header:not(.is-scrolled) { min-height: 76px; padding-top: .6rem; padding-bottom: .6rem; }
+.site-header.is-scrolled { min-height: 64px; padding-top: .35rem; padding-bottom: .35rem; }
+@media (max-width: 640px) {
+  .site-header:not(.is-scrolled) { min-height: 76px; }
+  .site-header.is-scrolled { min-height: 64px; }
+}
+
+/* ---------- hero "scroll down" cue: mirrors the contact bubble on the
+   opposite (left) side at the same bottom offset; only visible while the
+   pinned hero stepper (html.story-scroll-lock) still owns the scroll ---------- */
+.hero-scroll-cue {
+  position: fixed;
+  left: clamp(1.1rem, 3vw, 1.8rem);
+  bottom: clamp(1.1rem, 3vw, 1.8rem);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  color: #fff;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity .4s ease, transform .4s ease, visibility 0s linear .4s;
+  pointer-events: none;
+}
+html.story-scroll-lock .hero-scroll-cue {
+  opacity: .92;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity .4s ease .15s, transform .4s ease .15s, visibility 0s linear 0s;
+}
+.hero-scroll-cue-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.55);
+  flex-shrink: 0;
+  animation: heroScrollCueBounce 1.6s ease-in-out infinite;
+}
+.hero-scroll-cue-text {
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+@keyframes heroScrollCueBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-cue-icon { animation: none; }
+}
+@media (max-width: 640px) {
+  .hero-scroll-cue-text { display: none; }
+}
+
+/* ---------- floating contact bubbles (WhatsApp + Telegram, site-wide) ---------- */
+.contact-bubbles {
+  position: fixed;
+  right: clamp(1.1rem, 3vw, 1.8rem);
+  bottom: clamp(1.1rem, 3vw, 1.8rem);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .7rem;
+  /* the column's own box spans the full height of its children — including
+     the chat panel and telegram bubble even while they're invisible/closed
+     (opacity:0) — so without this, that empty space silently blocked
+     clicks on whatever sat underneath it (e.g. the "View all" link) */
+  pointer-events: none;
+}
+.contact-bubble-options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .7rem;
+  pointer-events: none;
+}
+.contact-trigger-row, .contact-trigger-wrap, .contact-trigger { pointer-events: auto; }
+/* ---------- chat widget popup (styled like a live-chat box, but the
+   send button just opens WhatsApp with the typed message) ---------- */
+.chat-widget-panel {
+  width: min(320px, calc(100vw - 2.4rem));
+  border-radius: 20px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(9,30,33,.28), 0 4px 14px rgba(9,30,33,.12);
+  opacity: 0;
+  transform: translateY(18px) scale(.92);
+  transform-origin: bottom right;
+  pointer-events: none;
+  transition: opacity .28s var(--ease-out, ease), transform .28s var(--ease-out, ease);
+}
+.contact-bubbles.is-open .chat-widget-panel {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.chat-widget-header {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(155deg, #25d366, #128c7e);
+  color: #fff;
+}
+.chat-widget-avatar {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #fff;
+  overflow: hidden;
+}
+.chat-widget-avatar img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+.chat-widget-headtext { display: flex; flex-direction: column; gap: .12rem; line-height: 1.2; }
+.chat-widget-headtext strong { display: inline-flex; align-items: center; gap: .3rem; font-family: "DM Sans", Arial, Helvetica, sans-serif; font-size: .95rem; font-weight: 700; color: #fff; }
+.chat-widget-verified { flex-shrink: 0; display: inline-grid; place-items: center; width: 15px; height: 15px; }
+.chat-widget-verified svg { width: 100%; height: 100%; display: block; }
+.chat-widget-headtext em { font-style: italic; font-size: .78rem; color: rgba(255,255,255,.85); }
+.chat-widget-body {
+  padding: 1.2rem 1.1rem 1rem;
+  background: var(--ivory, #f6f1e8);
+}
+.chat-widget-message { display: flex; align-items: flex-end; gap: .5rem; }
+.chat-widget-message-avatar {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(23,35,42,.1);
+  overflow: hidden;
+}
+.chat-widget-message-avatar img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+.chat-widget-bubble {
+  position: relative;
+  max-width: 88%;
+  padding: .8rem 1rem;
+  border-radius: 16px 16px 16px 4px;
+  background: #fff;
+  color: var(--ink, #17232a);
+  font-size: .88rem;
+  line-height: 1.45;
+  box-shadow: 0 6px 18px rgba(9,30,33,.08);
+}
+.chat-widget-inputrow {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: 0 1rem 1.1rem;
+  background: var(--ivory, #f6f1e8);
+}
+.chat-widget-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  padding: 0 1rem;
+  border: 1px solid rgba(23,35,42,.12);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink, #17232a);
+  font-family: "DM Sans", Arial, Helvetica, sans-serif;
+  font-size: .85rem;
+}
+.chat-widget-input::placeholder { color: rgba(23,35,42,.42); }
+.chat-widget-input:focus { outline: none; border-color: #25d366; box-shadow: 0 0 0 3px rgba(37,211,102,.14); }
+.chat-widget-send {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(155deg, #25d366, #128c7e);
+  color: #fff;
+  cursor: pointer;
+  transition: transform .2s var(--ease-out, ease), box-shadow .2s ease;
+  box-shadow: 0 8px 18px rgba(37,211,102,.35);
+}
+.chat-widget-send:hover { transform: translateY(-2px) scale(1.05); }
+.chat-widget-telegram-link {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .85rem 1.1rem;
+  background: #fff;
+  border-top: 1px solid rgba(23,35,42,.08);
+  color: var(--ink, #17232a);
+  font-family: "DM Sans", Arial, Helvetica, sans-serif;
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .2s ease;
+}
+.chat-widget-telegram-link:hover { background: var(--ivory, #f6f1e8); }
+.chat-widget-telegram-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(155deg, #4bc3ec, #229ed9);
+}
+.chat-widget-telegram-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* row holding the small Telegram shortcut beside the main trigger/close button */
+.contact-trigger-row {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+.telegram-fab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(155deg, #4bc3ec, #229ed9);
+  box-shadow: 0 12px 26px rgba(34,158,217,.4), inset 0 1px 0 rgba(255,255,255,.3);
+  opacity: 0;
+  transform: translateY(10px) scale(.85);
+  pointer-events: none;
+  transition: opacity .26s var(--ease-out, ease) .04s, transform .26s var(--ease-out, ease) .04s, box-shadow .2s ease;
+  overflow: hidden;
+}
+.contact-bubbles.is-open .telegram-fab {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.telegram-fab img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.telegram-fab:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 16px 32px rgba(34,158,217,.48), inset 0 1px 0 rgba(255,255,255,.3); }
+.telegram-fab-tooltip {
+  position: absolute;
+  right: calc(100% + .6rem);
+  top: 50%;
+  transform: translateY(-50%) translateX(8px);
+  padding: .55rem .95rem;
+  background: var(--ink, #17232a);
+  color: #fff;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(17,30,34,.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease;
+}
+.telegram-fab:hover .telegram-fab-tooltip,
+.telegram-fab:focus-visible .telegram-fab-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+.contact-trigger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: transparent;
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(0,0,0,.3);
+  cursor: pointer;
+  transition: transform .2s var(--ease-out, ease), box-shadow .2s ease;
+}
+.contact-trigger:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 18px 36px rgba(0,0,0,.36); }
+.contact-trigger-wrap { position: relative; display: inline-flex; }
+.contact-trigger-badge { position: absolute; top: -2px; right: -2px; z-index: 3; display: grid; place-items: center; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #e14b3f; color: #fff; font-family: "DM Sans", Arial, Helvetica, sans-serif; font-size: .6rem; font-weight: 700; line-height: 1; box-shadow: 0 0 0 2px #fff, 0 3px 8px rgba(0,0,0,.25); transition: opacity .2s ease, transform .2s ease; }
+.contact-bubbles.is-open .contact-trigger-badge { opacity: 0; transform: scale(.5); pointer-events: none; }
+.contact-trigger-icon { position: absolute; display: grid; place-items: center; transition: opacity .2s ease, transform .25s var(--ease-out, ease); }
+.contact-trigger-icon-open { inset: 0; }
+.contact-trigger-icon-open svg { display: block; }
+.contact-trigger-icon-close { opacity: 0; transform: scale(.5) rotate(-45deg); }
+.contact-bubbles.is-open .contact-trigger-icon-open { opacity: 0; transform: scale(.5) rotate(45deg); }
+.contact-bubbles.is-open .contact-trigger-icon-close { opacity: 1; transform: scale(1) rotate(0deg); }
+@media (max-width: 640px) {
+  .telegram-fab-tooltip { display: none; }
+  .telegram-fab { width: 40px; height: 40px; }
+  .contact-trigger { width: 48px; height: 48px; }
+  .chat-widget-panel { width: min(300px, calc(100vw - 2rem)); }
+}
+
+/* ==========================================================================
+   Ticker / marquee bar (below the hero) — infinite, seamless auto-scroll,
+   inspired by maafushi.com's highlights strip.
+   ========================================================================== */
+.ticker-bar {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  background: linear-gradient(90deg, #0a1d3d, #123a6b 45%, #0d2c56 75%, #081833);
+  padding: 1.1rem 0;
+  white-space: nowrap;
+}
+.ticker-bar::before,
+.ticker-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: clamp(2.5rem, 10vw, 7rem);
+  z-index: 2;
+  pointer-events: none;
+}
+.ticker-bar::before {
+  left: 0;
+  background: linear-gradient(to right, #0a1d3d, rgba(10,29,61,0));
+}
+.ticker-bar::after {
+  right: 0;
+  background: linear-gradient(to left, #081833, rgba(8,24,51,0));
+}
+.ticker-track {
+  display: inline-flex;
+  width: max-content;
+  animation: tickerScroll 32s linear infinite;
+  will-change: transform;
+}
+.ticker-bar:hover .ticker-track { animation-play-state: paused; }
+.ticker-group {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.ticker-item {
+  display: inline-block;
+  padding: 0 1.6rem;
+  font-family: "DM Sans", sans-serif;
+  font-size: .95rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: rgba(255,255,255,.94);
+}
+.ticker-dot {
+  color: rgba(255,255,255,.4);
+  font-size: .8rem;
+}
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+}
+@media (max-width: 640px) {
+  .ticker-item { font-size: .82rem; padding: 0 1.1rem; }
+  .ticker-track { animation-duration: 22s; }
+}
+
+/* ---------- highlight card expand overlay: smooth "grow from the card" ---------- */
+[data-expand] { cursor: pointer; }
+[data-expand]:focus-visible { outline: 2px solid var(--brass, #b08d57); outline-offset: 5px; border-radius: 4px; }
+
+.highlight-expand-overlay { position: fixed; inset: 0; z-index: 200; display: none; }
+.highlight-expand-overlay.is-visible { display: block; }
+
+/* ---------- "View all" excursion gallery: full-screen grid of every photo,
+   opened from the carousel's View all link; clicking a tile hands off to the
+   same [data-expand] expand-lightbox used everywhere else on the site ---------- */
+.excursion-gallery-overlay { position: fixed; inset: 0; z-index: 190; display: none; overflow-y: auto; background: #fff; transform: translate3d(-100%,0,0); transition: transform .45s cubic-bezier(.4,0,.2,1); will-change: transform; backface-visibility: hidden; contain: layout style paint; }
+.excursion-gallery-overlay.is-visible { display: block; }
+.excursion-gallery-overlay.is-shown { transform: translate3d(0,0,0); }
+/* backdrop-filter is expensive to recompute every frame while the panel is
+   sliding (it has to resample everything behind it), which is the main
+   source of the janky/laggy open animation on mid-range phones. Keep it off
+   while .is-shown is still being applied (mid-transition) and only switch
+   it on once .anim-settled lands ~1 frame after the transition finishes. */
+.excursion-gallery-header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: 1.4rem 6vw; background: #fff; border-bottom: 1px solid rgba(23,35,42,.08); }
+.excursion-gallery-overlay.anim-settled .excursion-gallery-header { background: rgba(255,255,255,.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.excursion-gallery-title { font-family: "Poppins", Arial, sans-serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); }
+.excursion-gallery-close { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 999px; border: 1px solid rgba(23,35,42,.18); background: #fff; color: var(--ink); cursor: pointer; transition: background .2s ease, transform .2s ease; }
+.excursion-gallery-close:hover { background: rgba(23,35,42,.06); transform: rotate(90deg); }
+.excursion-gallery-grid { display: flex; flex-direction: column; gap: 0; max-width: 1400px; padding: clamp(1.8rem, 4vw, 2.8rem) 6vw clamp(3rem, 6vw, 4.5rem); }
+.excursion-row { display: grid; grid-template-columns: 380px 1fr; align-items: center; gap: clamp(1.6rem, 3.5vw, 3rem); cursor: pointer; padding: clamp(1.6rem, 3vw, 2.2rem) 0; border-bottom: 1px solid rgba(23,35,42,.08); }
+.excursion-row:first-child { padding-top: 0; }
+.excursion-row:last-child { border-bottom: none; padding-bottom: 0; }
+.excursion-row-media { position: relative; aspect-ratio: 4 / 3; border-radius: 0; overflow: hidden; box-shadow: 0 8px 24px rgba(23,35,42,.1); }
+.excursion-row-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s cubic-bezier(.16,1,.3,1); }
+.excursion-row:hover .excursion-row-media img { transform: scale(1.06); }
+.excursion-row-copy { max-width: 520px; }
+.excursion-row-eyebrow { display: block; text-transform: uppercase; font-size: .72rem; letter-spacing: .08em; color: var(--brass, #b98a4d); font-weight: 600; }
+.excursion-row-copy h3 { font-family: "Poppins", Arial, sans-serif; font-size: clamp(1.15rem, 2vw, 1.45rem); font-weight: 600; color: var(--ink); margin: .35rem 0 .5rem; }
+.excursion-row-copy p { font-size: .92rem; line-height: 1.7; color: #5a6570; margin: 0; }
+
+/* ---------- "All Photos" gallery overlay: same slide-in/out treatment as
+   the excursions "All Experiences" overlay, opened from the "View all"
+   link under the curated 6-photo mosaic ---------- */
+.gallery-full-overlay { position: fixed; inset: 0; z-index: 190; display: none; overflow-y: auto; background: #fff; transform: translate3d(-100%,0,0); transition: transform .45s cubic-bezier(.4,0,.2,1); will-change: transform; backface-visibility: hidden; contain: layout style paint; }
+.gallery-full-overlay.is-visible { display: block; }
+.gallery-full-overlay.is-shown { transform: translate3d(0,0,0); }
+/* same backdrop-filter fix as the excursion overlay above: no blur while
+   the slide-in transition is actually running, only once settled */
+.gallery-full-header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: 1.4rem clamp(1.25rem, 2.5vw, 2.5rem); background: #fff; border-bottom: 1px solid rgba(23,35,42,.08); }
+.gallery-full-overlay.anim-settled .gallery-full-header { background: rgba(255,255,255,.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.gallery-full-title { font-family: "Poppins", Arial, sans-serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); }
+.gallery-full-close { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 999px; border: 1px solid rgba(23,35,42,.18); background: #fff; color: var(--ink); cursor: pointer; transition: background .2s ease, transform .2s ease; }
+.gallery-full-close:hover { background: rgba(23,35,42,.06); transform: rotate(90deg); }
+.gallery-full-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: clamp(1.2rem, 2.4vw, 2rem); max-width: min(97vw, 1600px); margin: 0 auto; padding: clamp(1.8rem, 4vw, 2.8rem) clamp(1.25rem, 2.5vw, 2.5rem) clamp(3rem, 6vw, 4.5rem); }
+/* On big/ultrawide monitors, let the grid keep growing past 1600px
+   instead of staying capped there with a big empty gutter down the sides
+   — same widening breakpoints already used elsewhere on the site
+   (Discover page grid, room carousel). auto-fill + minmax already adds
+   more columns as width grows, so the grid genuinely fills the extra
+   space instead of just centering with wasted margin. */
+@media (min-width: 1800px) {
+  .gallery-full-grid { max-width: min(97vw, 2000px); }
+}
+@media (min-width: 2200px) {
+  .gallery-full-grid { max-width: min(97vw, 2400px); }
+}
+@media (min-width: 2600px) {
+  .gallery-full-grid { max-width: min(97vw, 2900px); }
+}
+.gallery-full-grid .gallery-item { aspect-ratio: 1 / 1; border-radius: 0; content-visibility: auto; contain-intrinsic-size: 320px 320px; }
+/* Captioned variant (used for the "All Photos" gallery overlay): the photo
+   keeps its square crop inside .gallery-item-media, but the figure itself
+   grows to fit a short caption underneath instead of overlaying text on
+   top of the image. Overrides the base .gallery-item's on-image caption
+   treatment (the dark gradient + absolutely-positioned white text). */
+.gallery-full-grid-captioned .gallery-item { aspect-ratio: auto; display: flex; flex-direction: column; background: none; }
+.gallery-full-grid-captioned .gallery-item::after { display: none; }
+.gallery-full-grid-captioned .gallery-item-media { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: var(--secondary); }
+.gallery-full-grid-captioned .gallery-item-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gallery-full-grid-captioned .gallery-item figcaption { position: static; margin: .6rem 0 0; padding: 0; color: var(--muted-foreground, #5a6a70); font-size: .74rem; font-weight: 500; letter-spacing: 0; line-height: 1.4; text-align: left; }
+@media (max-width: 640px) {
+  .gallery-full-header { padding: 1.1rem 1.25rem; }
+  .gallery-full-title { font-size: 1.1rem; }
+  .gallery-full-grid { grid-template-columns: repeat(2, 1fr); gap: .8rem; padding: 1.4rem 1.25rem 2.8rem; }
+}
+@media (max-width: 900px) {
+  .excursion-row { grid-template-columns: 300px 1fr; }
+}
+@media (max-width: 640px) {
+  .excursion-gallery-header { padding: 1.1rem 1.25rem; }
+  .excursion-gallery-title { font-size: 1.1rem; }
+  .excursion-gallery-grid { padding: 1.4rem 1.25rem 2.8rem; }
+  .excursion-row { grid-template-columns: 1fr; gap: .9rem; align-items: start; padding: 1.2rem 0; }
+  .excursion-row-media { aspect-ratio: 16 / 10; border-radius: 0; }
+  .excursion-row-eyebrow { font-size: .6rem; }
+  .excursion-row-copy h3 { font-size: 1.05rem; margin: .2rem 0 .3rem; }
+  .excursion-row-copy p { font-size: .82rem; line-height: 1.55; }
+}
+
+.highlight-expand-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(7,22,25,.6);
+  opacity: 0;
+  transition: opacity .45s ease;
+}
+.highlight-expand-backdrop.is-visible { opacity: 1; }
+
+.highlight-expand-panel {
+  position: fixed;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(7,22,25,.4);
+  background: var(--teal-deep, #073f40);
+  will-change: top, left, width, height, border-radius;
+}
+.highlight-expand-panel.is-active { display: block; }
+
+.highlight-expand-image { position: absolute; inset: 0; }
+.highlight-expand-image img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .26s ease; }
+.highlight-expand-panel.is-swapping .highlight-expand-image img { opacity: 0; }
+
+.highlight-expand-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7,22,25,0) 40%, rgba(7,22,25,.82) 100%);
+  pointer-events: none;
+}
+
+.highlight-expand-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: clamp(1.3rem, 3vw, 2.2rem);
+  color: #fff;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .4s ease, transform .4s ease;
+}
+.highlight-expand-panel.show-content .highlight-expand-content { opacity: 1; transform: none; }
+.highlight-expand-panel.is-swapping .highlight-expand-content { opacity: 0; }
+
+.highlight-expand-title {
+  margin: 0 0 .55rem;
+  font-family: "DM Sans", Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  font-size: clamp(1.5rem, 3.2vw, 2.1rem);
+}
+.highlight-expand-desc {
+  margin: 0 0 1.1rem;
+  max-width: 34rem;
+  font-size: .88rem;
+  line-height: 1.65;
+  color: rgba(255,255,255,.86);
+}
+.highlight-expand-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1.3rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .4s ease .08s, transform .4s ease .08s;
+}
+.highlight-expand-panel.show-content .highlight-expand-tags { opacity: 1; transform: none; }
+.highlight-expand-tag {
+  padding: .35rem .85rem;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 999px;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.highlight-expand-close {
+  position: absolute;
+  z-index: 2;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(7,22,25,.5);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(.7);
+  transition: opacity .3s ease .1s, transform .3s ease .1s, background .2s ease;
+}
+.highlight-expand-panel.show-content .highlight-expand-close { opacity: 1; transform: scale(1); }
+.highlight-expand-close:hover { background: rgba(7,22,25,.75); }
+
+.highlight-expand-progress {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(255,255,255,.28);
+  pointer-events: none;
+}
+.highlight-expand-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #fff;
+}
+.highlight-expand-panel.is-static-gallery .highlight-expand-progress { display: none; }
+
+.highlight-expand-nav {
+  position: absolute;
+  z-index: 2;
+  right: clamp(1.3rem, 3vw, 2.2rem);
+  bottom: clamp(1.3rem, 3vw, 2.2rem);
+  display: flex;
+  gap: .6rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .4s ease .08s, transform .4s ease .08s;
+}
+.highlight-expand-panel.show-content .highlight-expand-nav { opacity: 1; transform: none; }
+.highlight-expand-panel.is-swapping .highlight-expand-nav { opacity: 0; }
+.highlight-expand-nav-btn {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 50%;
+  background: rgba(7,22,25,.5);
+  color: #fff;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+.highlight-expand-nav-btn:hover { background: rgba(7,22,25,.75); }
+.highlight-expand-nav-btn:active { transform: scale(.92); }
+@keyframes highlightExpandProgress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+body.highlight-expand-lock { overflow: hidden; }
+
+@media (max-width: 640px) {
+  .highlight-expand-desc { font-size: .82rem; }
+  .highlight-expand-tags { gap: .4rem; }
+  .highlight-expand-tag { font-size: .58rem; padding: .3rem .7rem; }
+  .highlight-expand-nav-btn { width: 38px; height: 38px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .highlight-expand-panel, .highlight-expand-backdrop { transition: none !important; }
+}
+
+/* ==========================================================================
+   iOS-style glassmorphism: "Book now" pill (header CTA, all header states
+   and breakpoints) and the floating chat trigger bubble. Uses !important
+   on the handful of properties that earlier, more specific rules in this
+   file also set (border/background/shadow/blur across scrolled + mobile
+   states), so the frosted-glass look stays consistent everywhere the pill
+   or bubble appears instead of getting overridden state-by-state.
+   ========================================================================== */
+/* ==========================================================================
+   Liquid-glass redesign: "Book now" pill (header CTA, all header states
+   and breakpoints) and the floating chat trigger bubble. Modeled on the
+   brighter, more refractive "liquid glass" look (soft specular highlight
+   arcing across the top, saturated blur so color behind bleeds through,
+   a crisp bright rim) rather than a flat frosted panel. Uses !important
+   on the handful of properties that earlier, more specific rules in this
+   file also set (border/background/shadow/blur across scrolled + mobile
+   states), so the look stays consistent everywhere the pill or bubble
+   appears instead of getting overridden state-by-state.
+   ========================================================================== */
+/* reference "BOOK NOW": a quiet outlined rectangle, no fill — reads clean
+   against the transparent hero header, then flips to a dark-ink outline
+   once the header goes solid white on scroll. */
+.header-cta {
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,.85) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: #fff !important;
+  text-shadow: none !important;
+  transition: transform .18s var(--ease-out, ease), background .25s ease, border-color .25s ease, color .25s ease !important;
+}
+.header-cta:hover {
+  background: rgba(255,255,255,.14) !important;
+  border-color: #fff !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+/* same outline treatment, dark-on-white once the header has scrolled to
+   its compact solid bar */
+.site-header.is-scrolled .header-cta {
+  background: transparent !important;
+  border: 1px solid rgba(23,35,42,.4) !important;
+  box-shadow: none !important;
+  color: var(--ink) !important;
+  text-shadow: none !important;
+}
+.site-header.is-scrolled .header-cta:hover {
+  background: rgba(23,35,42,.06) !important;
+  border-color: var(--ink) !important;
+  color: var(--ink) !important;
+}
+
+.contact-trigger {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: 0 14px 30px rgba(0,0,0,.3) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: #fff !important;
+  transition: transform .2s var(--ease-out, ease), box-shadow .2s ease !important;
+}
+.contact-trigger::before { content: none; }
+.contact-trigger:hover {
+  box-shadow: 0 18px 36px rgba(0,0,0,.36) !important;
+}
+
+@media (prefers-contrast: more) {
+  .header-cta, .contact-trigger { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  .header-cta::before, .header-cta::after, .contact-trigger::before { display: none !important; }
+}
+
+/* Force true centering for the Highlights section heading — an older
+   flex/nowrap rule elsewhere in this file was pulling the title off-center
+   at some widths, so pin it explicitly instead of relying on cascade order. */
+.highlights-section .section-heading-row {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 0 !important;
+  padding-bottom: clamp(1.6rem, 3vw, 2.6rem) !important;
+}
+.highlights-section .section-heading-row .highlights-heading,
+.highlights-section .section-heading-row .section-lede,
+.highlights-section .section-heading-row .highlights-eyebrow {
+  width: 100%;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  white-space: normal !important;
+  text-align: center !important;
+}
+
+/* [data-expand] cards (excursion cards, highlight cards, gallery photos)
+   open via the "highlight-expand" overlay defined inline in index.html. */
+[data-expand] { cursor: pointer; }
+
+/* ==========================================================================
+   Room Offers — auto-looping carousel (Double / Triple / Family) instead of
+   the old static 2-up grid + separate Family promo panel below it. See
+   ".room-carousel" block further down for the carousel itself; this first
+   part just keeps the section heading/shell rules that still apply.
+   ========================================================================== */
+.room-offers-section, .other-offers-section { padding-bottom: clamp(3.5rem, 7vw, 6.5rem); }
+.other-offers-heading-row { display: block; text-align: center; padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 4vw, 3rem) 0; margin-bottom: clamp(1.6rem, 3vw, 2.6rem); }
+.other-offers-heading-row .eyebrow { display: block; margin-bottom: 1.1rem; }
+.other-offers-heading-row .display-heading { font-size: clamp(1.5rem, 2.6vw, 2.1rem); }
+
+/* Room Offers breaks out of the shared 1280/1440/etc.-capped .section-shell
+   entirely and runs the full width of the page, instead of sitting centered
+   in a narrow strip with big empty gutters on large screens. */
+.room-offers-section.section-shell { max-width: none; width: 100%; }
+
+.offer-card { display: flex; flex-direction: column; background: #f3efe6; overflow: hidden; width: 100%; }
+/* Room cards (Other Rooms / Accommodation) made fully clickable via
+   room-detail.js — cursor cue for the whole card, not just the button. */
+.offer-card-clickable { cursor: pointer; }
+/* Reference-style card: full-width landscape photo on top, centered
+   content below with a thin divider under the title. */
+.offer-card-media { position: relative; overflow: hidden; width: 100%; aspect-ratio: 3 / 2; }
+.offer-card-media img { position: absolute; top: -9%; left: 0; width: 100%; height: 118%; object-fit: cover; display: block; -webkit-user-drag: none; user-drag: none; pointer-events: none; will-change: transform; transform: translate3d(0, var(--img-drift, 0px), 0) scale(var(--img-scale, 1)); transition: transform .25s var(--ease-out), filter .5s ease; }
+.offer-card:hover .offer-card-media img { --img-scale: 1.06; filter: saturate(1.08); }
+.offer-card-body { display: flex; flex-direction: column; align-items: center; text-align: center; gap: .85rem; padding: clamp(1.7rem, 2.8vw, 2.4rem) clamp(1.6rem, 3vw, 2.4rem) clamp(2rem, 3.4vw, 2.6rem); }
+.offer-card-body h3 { width: 100%; margin: 0 0 .85rem; padding-bottom: .9rem; border-bottom: 1px solid rgba(23,35,42,.14); font-family: "Poppins", Arial, sans-serif; font-size: clamp(1.15rem, 1.7vw, 1.4rem); font-weight: 500; letter-spacing: -.02em; line-height: 1.1; color: var(--ink); }
+.offer-card-body p { margin: 0; color: var(--muted-foreground, #5a6a70); font-size: .84rem; line-height: 1.55; }
+.offer-card-price { display: flex; align-items: baseline; justify-content: center; gap: .4rem; }
+.offer-card-price span { font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-foreground, #5a6a70); }
+.offer-card-price strong { font-family: "Poppins", Arial, sans-serif; font-size: 1.15rem; color: var(--ink); }
+.offer-card-price strong small { font-size: .58rem; font-weight: 500; color: var(--muted-foreground, #5a6a70); margin-left: .2rem; text-transform: uppercase; }
+.offer-card-actions { display: flex; align-items: center; justify-content: center; gap: .7rem; margin-top: .4rem; }
+.offer-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: .55rem 1.2rem; border-radius: 2px; font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; line-height: 1; cursor: pointer; transition: transform .18s var(--ease-out, ease), background .25s ease, color .25s ease, border-color .25s ease; text-decoration: none; }
+.offer-btn-outline { background: transparent; border: 1px solid var(--brass); color: var(--ink); }
+.offer-btn-outline:hover { background: rgba(186,141,92,.1); }
+.offer-btn-solid { background: var(--brass); border: 1px solid var(--brass); color: #fff; }
+.offer-btn-solid:hover { background: #a67c4d; border-color: #a67c4d; transform: translateY(-1px); }
+
+@media (max-width: 640px) {
+  .offer-card-actions { flex-wrap: wrap; }
+}
+
+/* ==========================================================================
+   Room Offers carousel — Double / Triple / Family, one photo-left/copy-right
+   slide at a time (two slides visible side by side on desktop), sliding
+   automatically every 4s and looping seamlessly forever. Round prev/next
+   arrows sit outside the viewport; dots below show which room is active.
+
+   Looping mechanic: the track holds the 3 real slides plus one clone of the
+   last slide prepended and one clone of the first slide appended
+   (Family-clone, Double, Triple, Family, Double-clone). JS always animates
+   forward/back by exactly one slide; the instant a clone finishes sliding
+   fully into view, JS snaps the track back to the matching real slide with
+   transitions switched off for that one frame — invisible to the eye, but
+   it means autoplay/arrows can keep moving the same direction forever
+   without ever visually "rewinding" across all the slides.
+   ========================================================================== */
+.room-offers-section { overflow-x: hidden; }
+
+.room-carousel { position: relative; display: flex; align-items: center; gap: clamp(.6rem, 1.8vw, 1.6rem); max-width: 1500px; margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem); }
+.room-carousel-viewport { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+
+/* On big/ultrawide monitors, let the carousel keep growing past 1500px
+   instead of staying capped there with empty gutters on either side —
+   same widening breakpoints already used for the Discover page's flat
+   grid (offers.css). Since .room-carousel-media img is
+   position:absolute + width/height:100%, the photo itself scales up to
+   fill however large the card gets, instead of staying a fixed size. */
+@media (min-width: 1600px) {
+  .room-carousel { max-width: min(92vw, 1800px); }
+}
+@media (min-width: 2000px) {
+  .room-carousel { max-width: min(93vw, 2200px); }
+}
+@media (min-width: 2400px) {
+  .room-carousel { max-width: min(93vw, 2600px); }
+}
+.room-carousel-track { display: flex; transition: transform .7s cubic-bezier(.65,0,.35,1); }
+.room-carousel-track.is-jumping { transition: none !important; }
+.room-carousel-slide { flex: 0 0 auto; box-sizing: border-box; padding: 0 clamp(.5rem, 1.2vw, .9rem); }
+
+.room-carousel-slide-inner { display: grid; grid-template-columns: 3fr 2fr; align-items: stretch; height: 100%; min-height: 560px; background: #f3efe6; }
+.room-carousel-media { display: block; position: relative; overflow: hidden; }
+.room-carousel-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; -webkit-user-drag: none; user-drag: none; }
+/* justify-content: space-between (not center) so the copy column actually
+   uses the card's full min-height instead of clustering everything in the
+   middle with dead space above/below: the top group (eyebrow/title/desc/
+   meta) anchors to the top, the bottom group (price/actions) anchors to
+   the bottom, and the space between them grows to fill whatever height the
+   card ends up at. */
+.room-carousel-copy { display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 1.6rem; padding: clamp(2rem, 3.4vw, 3.2rem); text-align: left; }
+.room-carousel-copy-top { display: flex; flex-direction: column; align-items: inherit; gap: 1rem; width: 100%; }
+.room-carousel-copy-bottom { display: flex; flex-direction: column; align-items: inherit; gap: .9rem; width: 100%; }
+.room-carousel-copy .eyebrow { color: var(--brass); }
+.room-carousel-copy h3 { margin: 0; font-family: "Cormorant Garamond", serif; font-size: clamp(1.9rem, 3.4vw, 2.6rem); font-weight: 500; color: var(--ink); }
+.room-carousel-copy p { margin: 0; max-width: 26rem; color: var(--muted-foreground, #5a6a70); font-size: .95rem; line-height: 1.75; }
+.room-carousel-copy .offer-card-price { justify-content: flex-start; }
+.room-carousel-copy .offer-card-price span { text-align: left; }
+.room-carousel-copy .offer-card-price strong { font-size: 1.3rem; }
+
+/* Room carousel meta row — quick-glance rating/size/bed/view details on the
+   index.html accommodation cards, echoing the fuller .room-meta-row used on
+   the room-detail pages but compact enough to sit inside the narrower
+   carousel copy column. Wraps to 2-up on its own rather than a fixed grid,
+   since the 4th value's length varies a lot ("City View" vs "1 Twin Bed +
+   1 Full Bed"). */
+.room-carousel-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.1rem; margin: .1rem 0; }
+.room-carousel-meta-item { display: flex; align-items: center; gap: .4rem; font-size: .78rem; line-height: 1.3; color: var(--muted-foreground, #5a6a70); }
+.room-carousel-meta-item svg { width: 16px; height: 16px; color: var(--brass); flex: 0 0 auto; opacity: .9; }
+.room-carousel-meta-item strong { font-family: "Poppins", Arial, sans-serif; font-weight: 500; color: var(--ink); }
+a.room-carousel-meta-link { text-decoration: none; cursor: pointer; }
+a.room-carousel-meta-link strong { text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .2s ease, color .2s ease; }
+a.room-carousel-meta-link:hover strong,
+a.room-carousel-meta-link:focus-visible strong { text-decoration-color: var(--brass); color: var(--brass); }
+
+.room-carousel-arrow { flex: 0 0 auto; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid rgba(23,35,42,.28); background: transparent; color: var(--ink); cursor: pointer; transition: background .2s ease, border-color .2s ease, color .2s ease, transform .2s var(--ease-out); }
+.room-carousel-arrow svg { width: 18px; height: 18px; }
+.room-carousel-arrow:hover { background: var(--brass); border-color: var(--brass); color: #fff; }
+.room-carousel-arrow:active { transform: scale(.94); }
+
+.room-carousel-dots { display: flex; align-items: center; justify-content: center; gap: .55rem; margin: clamp(1.6rem, 3vw, 2.4rem) auto 0; }
+.room-carousel-dot { position: relative; width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: rgba(23,35,42,.22); cursor: pointer; transition: width .35s var(--ease-out), background .35s ease; }
+.room-carousel-dot.is-active { width: 22px; background: var(--brass); }
+
+/* "View All Rooms" button below the carousel dots — reuses the site's
+   existing .offer-btn-outline button (same component as "More Details")
+   so it reads as a real CTA rather than a plain text link. */
+.room-carousel-view-all-row { display: flex; justify-content: center; margin: clamp(1.3rem, 2.6vw, 2rem) auto 0; }
+
+@media (max-width: 860px) {
+  /* Stop equal-height stretching on mobile: the track is a flex row with
+     the browser default align-items:stretch, so every slide (including
+     off-screen ones) gets forced to the height of the tallest slide's
+     natural content — e.g. Family Room's longer copy makes Double/Triple
+     taller than their own content needs. On desktop this is invisible
+     (image + copy sit side-by-side and the image just crops taller), but
+     once stacked into 2 rows on mobile, that forced extra height lands as
+     a big empty gap between the image and the text below it. Sizing each
+     slide to its own content here removes that gap. */
+  .room-carousel-track { align-items: flex-start; }
+  .room-carousel-slide-inner { grid-template-columns: 1fr; height: auto; min-height: 0; }
+  .room-carousel-media { aspect-ratio: 3 / 2; }
+  .room-carousel-copy { align-items: center; justify-content: flex-start; text-align: center; padding: clamp(1.6rem, 3vw, 2.2rem); }
+  .room-carousel-copy .offer-card-price, .room-carousel-copy .offer-card-actions { justify-content: center; }
+  .room-carousel-copy .room-carousel-meta { justify-content: center; }
+  .room-carousel-copy .offer-card-price span { text-align: center; }
+}
+
+@media (max-width: 640px) {
+  /* Arrows move below the card, side by side, instead of floating at the
+     left/right edges of the viewport — matches the reference mobile
+     layout. .room-carousel-viewport takes the full first row (order: 1);
+     the two arrow buttons drop to a centered row underneath (order: 2/3),
+     just using flex-wrap + order so the existing prev/next buttons don't
+     need to move in the markup. */
+  .room-carousel { gap: .4rem; padding: 0 .5rem; flex-wrap: wrap; justify-content: center; row-gap: .9rem; }
+  .room-carousel-viewport { flex: 1 1 100%; order: 1; }
+  .room-carousel-prev { order: 2; }
+  .room-carousel-next { order: 3; }
+  .room-carousel-arrow { width: 36px; height: 36px; }
+  .room-carousel-arrow svg { width: 15px; height: 15px; }
+  .room-carousel-view-all-row { margin-top: 2rem; }
+}
+
+/* Accommodation's own bottom padding (.room-offers-section) plus
+   Highlights' shared mobile top padding (5.5rem, set alongside
+   .intro-section/.gallery-section above) stacked into a ~144px dead gap
+   once the room-carousel dots were removed and there was nothing left to
+   visually bridge it. Only trims Highlights' top padding when it's the
+   section right after Accommodation, so .intro-section/.gallery-section's
+   own mobile spacing is untouched. */
+@media (max-width: 640px) {
+  .room-offers-section + .highlights-section { padding-top: 3rem; }
+}
+
+/* Whole carousel + dots fade/rise in together on scroll (plain .reveal
+   timing is fine here — no need for the old per-card stagger since it's
+   one moving unit now, not separate static cards). */
+.room-offers-section .room-carousel.reveal,
+.room-offers-section .room-carousel-dots.reveal,
+.room-offers-section .room-carousel-view-all-row.reveal { opacity: 0; transform: translateY(26px); transition: opacity 1.3s var(--ease-out), transform 1.3s var(--ease-out); }
+.room-offers-section .room-carousel-dots.reveal { transition-delay: .12s; }
+.room-offers-section .room-carousel-view-all-row.reveal { transition-delay: .2s; }
+.room-offers-section .room-carousel.reveal.is-visible,
+.room-offers-section .room-carousel-dots.reveal.is-visible,
+.room-offers-section .room-carousel-view-all-row.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .room-carousel-track { transition: none !important; }
+  .room-offers-section .room-carousel.reveal,
+  .room-offers-section .room-carousel-dots.reveal,
+  .room-offers-section .room-carousel-view-all-row.reveal { transition: none; opacity: 1; transform: none; }
+}
+
+/* ==========================================================================
+   Highlights ("What Awaits You…") + Why Choose Us cards (both use the
+   shared .stay-card-grid), and the main Gallery ("Joy, Laughter…") grid —
+   same left/right "assemble" scroll-reveal as the accommodation cards
+   above: each piece slides in from an alternating side over 2s and
+   settles into place, instead of the site's plain fade-up. Selectors
+   carry extra specificity so they cleanly override both the base .reveal
+   timing and the cascading fade-up delays set for these same elements
+   further up in this file, without touching .reveal anywhere else.
+   ========================================================================== */
+.highlights-section, .excursions-section, .gallery-section { overflow-x: hidden; }
+
+.stay-card-grid .stay-card.reveal {
+  --assemble-x: -70px;
+  opacity: 0;
+  transform: translateX(var(--assemble-x));
+  transition: opacity 2s cubic-bezier(.22,.68,0,1), transform 2s cubic-bezier(.22,.68,0,1);
+}
+.stay-card-grid .stay-card.reveal.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+/* alternating stagger: card 1 (left column) slides in from the left,
+   card 3 (right column) slides in from the right, card 2 (center
+   column) rises up from below instead of sliding sideways — matches
+   each card's actual position instead of alternating regardless of it. */
+.stay-card-grid .stay-card.reveal:nth-child(1) { transition-delay: 0s; }
+.stay-card-grid .stay-card.reveal:nth-child(2) {
+  --assemble-x: 0px;
+  transform: translateY(34px);
+  transition-delay: .12s;
+}
+.stay-card-grid .stay-card.reveal:nth-child(2).is-visible { transform: translateY(0); }
+.stay-card-grid .stay-card.reveal:nth-child(3) { --assemble-x: 70px; transition-delay: .24s; }
+
+.gallery-section .gallery-grid .gallery-item.reveal {
+  --assemble-x: -70px;
+  opacity: 0;
+  transform: translateX(var(--assemble-x));
+  transition: opacity 2s cubic-bezier(.22,.68,0,1), transform 2s cubic-bezier(.22,.68,0,1);
+}
+.gallery-section .gallery-grid .gallery-item.reveal.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.gallery-section .gallery-grid .gallery-item.reveal:nth-child(1) { transition-delay: 0s; }
+.gallery-section .gallery-grid .gallery-item.reveal:nth-child(2) { --assemble-x: 70px; transition-delay: .1s; }
+.gallery-section .gallery-grid .gallery-item.reveal:nth-child(3) { transition-delay: .2s; }
+.gallery-section .gallery-grid .gallery-item.reveal:nth-child(4) { --assemble-x: 70px; transition-delay: .3s; }
+.gallery-section .gallery-grid .gallery-item.reveal:nth-child(5) { transition-delay: .4s; }
+.gallery-section .gallery-grid .gallery-item.reveal:nth-child(6) { --assemble-x: 70px; transition-delay: .5s; }
+
+/* On phones .stay-card-grid becomes a horizontal snap-scroll strip, so a
+   left/right slide fights the swipe direction — drop to a simple rise
+   from below instead (still a 2s assemble, just vertical). */
+@media (max-width: 640px) {
+  .stay-card-grid .stay-card.reveal,
+  .gallery-section .gallery-grid .gallery-item.reveal {
+    --assemble-x: 0px;
+    transform: translateY(34px);
+  }
+  .stay-card-grid .stay-card.reveal.is-visible,
+  .gallery-section .gallery-grid .gallery-item.reveal.is-visible {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stay-card-grid .stay-card.reveal,
+  .gallery-section .gallery-grid .gallery-item.reveal {
+    transition: none; opacity: 1; transform: none;
+  }
+}
+
+/* ==========================================================================
+   "Explore Rasdhoo" hero CTA — restyled to match the "Explore Maafushi"
+   reference: a quiet outlined rectangle (not a pill) with a soft frosted
+   fill, a slim white border, gently rounded ("semi-curved") corners, and
+   the text set in the site's serif for a calmer, more editorial feel
+   than the old all-caps glass pill. Same look on web and mobile.
+   ========================================================================== */
+.hero-explore-btn {
+  min-height: 38px;
+  padding: .55rem 1.5rem;
+  border-radius: 8px;
+  border: 1.3px solid rgba(255,255,255,.85);
+  background: rgba(20,38,40,.28);
+  box-shadow: 0 6px 18px rgba(0,0,0,.2);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: .82rem;
+  letter-spacing: .01em;
+  text-transform: none;
+}
+.hero-explore-btn:hover {
+  background: rgba(20,38,40,.4);
+  border-color: #fff;
+  box-shadow: 0 8px 22px rgba(0,0,0,.26);
+}
+@media (max-width: 640px) {
+  .hero-explore-btn { min-height: 34px; padding: .48rem 1.2rem; font-size: .76rem; border-radius: 7px; }
+}
+
+/* ==========================================================================
+   "Book Now" / "More Details" CTAs — back to the sharp-cornered rectangle
+   (the 10px curved treatment below is disabled again per feedback), and
+   forced to a single line: at the room-carousel's taller card width the
+   "MORE DETAILS" label was narrow enough to wrap onto 2 lines.
+   ========================================================================== */
+.offer-btn { border-radius: 2px; white-space: nowrap; }
+/* reference "BOOK NOW" reads as a sharp-cornered outline, not the rounded
+   pill used elsewhere on the site — keep the header CTA squared off. */
+.header-cta { border-radius: 0 !important; }
+
+/* ==========================================================================
+   Force-center text: Hero (Welcome to Dhaankolhu Rasdhoo), the About
+   chapter, and the collage "Local Island / North Ari Atoll" badge —
+   on both desktop and mobile, regardless of any earlier rule.
+   ========================================================================== */
+.hero-content,
+.hero-content .eyebrow,
+.hero-content .hero-eyebrow,
+.hero-content .hero-title,
+.hero-content .hero-copy,
+.story-panel-about,
+.story-panel-about .story-panel-inner,
+.story-panel-about .eyebrow,
+.story-panel-about h2,
+.story-panel-about p,
+.collage-badge,
+.collage-badge-eyebrow,
+.collage-badge strong {
+  text-align: center !important;
+}
+.hero-content { display: flex !important; flex-direction: column !important; align-items: center !important; }
+.story-panel-about .story-panel-inner { margin-left: auto !important; margin-right: auto !important; }
+.collage-badge { left: 50% !important; transform: translate(-50%, -50%) !important; }
+
+@media (max-width: 640px) {
+  .hero-content,
+  .hero-content .eyebrow,
+  .hero-content .hero-eyebrow,
+  .hero-content .hero-title,
+  .hero-content .hero-copy,
+  .story-panel-about,
+  .story-panel-about .story-panel-inner,
+  .story-panel-about .eyebrow,
+  .story-panel-about h2,
+  .story-panel-about p,
+  .collage-badge,
+  .collage-badge-eyebrow,
+  .collage-badge strong {
+    text-align: center !important;
+  }
+  .hero-content { align-items: center !important; }
+}

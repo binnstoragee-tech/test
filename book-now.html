@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Smooth cross-page transitions: hide the page instantly (before first paint)
+       so book-now.js can fade it in — this inline script MUST stay first in <head>. -->
+  <script>document.documentElement.classList.add("is-preload");</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b6e70" />
+  <meta name="description" content="Reserve your stay at Dhaankolhu Rasdhoo Island — a quiet stretch of the Indian Ocean, kept simple, kept beautiful." />
+  <link rel="icon" type="image/png" href="img/logo/favicon-light-bg.png" />
+  <link rel="icon" type="image/png" href="img/logo/favicon-light-bg.png" media="(prefers-color-scheme: light)" />
+  <link rel="icon" type="image/png" href="img/logo/favicon-dark-bg.png" media="(prefers-color-scheme: dark)" />
+  <link rel="shortcut icon" type="image/png" href="img/logo/favicon-light-bg.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="book-now.css" />
+  <title>Book Now - Dhaankolhu Rasdhoo</title>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header" id="site-header">
+      <a class="brand-lockup" href="index.html" aria-label="Dhaankolhu Rasdhoo Island home"><img class="brand-mark" src="img/logo/logo-white.png" alt="Dhaankolhu Rasdhoo Island logo" /></a>
+      <div class="header-nav-group">
+        <nav class="desktop-nav" aria-label="Primary navigation"><a href="index.html#about">About</a><a href="index.html#experience">Experience</a><div class="nav-dropdown"><a href="family-room.html" class="nav-dropdown-trigger">Accommodation<svg class="nav-dropdown-chevron" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a><div class="nav-dropdown-panel"><a href="double-room.html">Double Room</a><a href="triple-room.html">Triple Room</a><a href="family-room.html">Family Room</a></div></div><a href="offers.html">Offers</a><div class="nav-dropdown"><a href="index.html#highlights" class="nav-dropdown-trigger" data-nav-noop>Others<svg class="nav-dropdown-chevron" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a><div class="nav-dropdown-panel"><a href="index.html#highlights">Highlights</a><a href="index.html#gallery">Gallery</a></div></div></nav>
+        <!-- "Book now" doesn't make sense in the header while you're already
+             on the booking page, so the right slot is left to the chat-bubble
+             contact trigger (floating, docked separately below) instead of a CTA. -->
+        <button class="menu-trigger" id="menu-trigger" type="button" aria-label="Open menu" aria-expanded="false"><span class="hamburger-icon"><span class="line line1"></span><span class="line line2"></span><span class="line line3"></span></span></button>
+      </div>
+    </header>
+      <div class="header-contact-bubbles" id="header-contact-bubbles">
+        <div class="header-contact-options" id="header-contact-options">
+          <div class="chat-widget-panel" id="header-chat-widget-panel" role="dialog" aria-modal="false" aria-label="Chat with Dhaankolhu Rasdhoo" aria-hidden="true">
+            <div class="chat-widget-header">
+              <span class="chat-widget-avatar"><img loading="lazy" decoding="async" src="img/logo/favicon-light-bg.png" alt="" /></span>
+              <span class="chat-widget-headtext">
+                <strong>Dhaankolhu Rasdhoo</strong>
+                <em>online</em>
+              </span>
+            </div>
+            <div class="chat-widget-body">
+              <div class="chat-widget-message">
+                <span class="chat-widget-message-avatar"><img loading="lazy" decoding="async" src="img/logo/favicon-light-bg.png" alt="" /></span>
+                <div class="chat-widget-bubble">Welcome to Dhaankolhu Rasdhoo! How can we help you?</div>
+              </div>
+            </div>
+            <form class="chat-widget-inputrow" id="header-chat-widget-form">
+              <input type="text" id="header-chat-widget-input" class="chat-widget-input" placeholder="Type here..." autocomplete="off" aria-label="Type your message" />
+              <button type="submit" class="chat-widget-send" aria-label="Send on WhatsApp">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+            </form>
+            <a class="chat-widget-telegram-link" href="https://t.me/+9609898130" target="_blank" rel="noopener">
+              <span class="chat-widget-telegram-icon"><img loading="lazy" decoding="async" src="img/telegram.webp" alt="" /></span>
+              Chat on Telegram instead
+            </a>
+          </div>
+        </div>
+        <button class="header-contact-trigger" id="header-contact-trigger" type="button" aria-expanded="false" aria-controls="header-contact-options" aria-label="Contact us">
+          <span class="header-contact-trigger-icon header-contact-trigger-icon-open" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="100%" height="100%" style="display:block;"><circle cx="12" cy="12" r="12" fill="#25d366"/><path fill="#fff" d="M12.04 5.5c-3.61 0-6.54 2.93-6.54 6.54 0 1.15.3 2.28.87 3.27L5.4 18.6l3.42-.9a6.53 6.53 0 0 0 3.22.85h.003c3.61 0 6.545-2.93 6.545-6.54 0-1.75-.68-3.39-1.918-4.628A6.506 6.506 0 0 0 12.04 5.5zm3.837 9.354c-.16.45-.93.86-1.28.912-.328.05-.74.07-1.194-.075-.275-.088-.629-.205-1.083-.401-1.906-.823-3.15-2.74-3.244-2.867-.094-.127-.774-1.03-.774-1.966 0-.936.492-1.396.666-1.587.175-.19.381-.238.508-.238l.365.007c.118.005.276-.044.431.328.16.383.541 1.323.589 1.42.048.095.08.207.016.334-.064.127-.096.207-.19.317-.096.111-.201.248-.287.334-.096.096-.195.2-.084.39.111.19.494.817 1.062 1.324.729.65 1.344.852 1.535.949.19.096.301.08.412-.048.111-.127.476-.556.603-.746.127-.19.254-.16.428-.096.175.064 1.109.523 1.298.618.19.096.317.144.363.223.048.08.048.462-.112.911z"/></svg>
+          </span>
+          <span class="header-contact-trigger-icon header-contact-trigger-icon-close" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </span>
+        </button>
+        <span class="header-contact-trigger-badge" aria-hidden="true">1</span>
+      </div>
+
+
+    <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+      <div class="mobile-menu-inner">
+        <span class="eyebrow">The local island edit</span>
+        <nav aria-label="Mobile navigation">
+          <a href="index.html#about"><span>01</span>About</a>
+          <a href="index.html#experience"><span>02</span>Experience</a>
+          <a href="family-room.html"><span>03</span>Accommodation</a>
+          <a href="offers.html"><span>04</span>Offers</a>
+          <a href="index.html#highlights"><span>05</span>Highlights</a>
+          <a href="index.html#gallery"><span>06</span>Gallery</a>
+        </nav>
+        <div class="mobile-menu-divider"></div>
+        <button class="mobile-book-now js-scroll-top" type="button">Book now</button>
+      </div>
+    </div>
+
+    <main>
+      <section class="bk-flow-section section-shell" id="booking-flow">
+        <div class="bk-rail-outer">
+          <div class="bk-rail" id="bk-rail">
+            <div class="bk-rail-indicator" aria-hidden="true"></div>
+            <button class="bk-rail-step is-active" data-step="1" type="button" disabled>
+              <svg class="bk-rail-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 3V6.2M16 3V6.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <span class="bk-rail-label">Dates</span>
+            </button>
+            <button class="bk-rail-step" data-step="2" type="button" disabled>
+              <svg class="bk-rail-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 19V7.5C3.5 6.67 4.17 6 5 6H10.5C11.33 6 12 6.67 12 7.5V13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 13H19C19.83 13 20.5 13.67 20.5 14.5V19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 19H21.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="6.75" cy="9.25" r="1.35" stroke="currentColor" stroke-width="1.5"/></svg>
+              <span class="bk-rail-label">Your Stay</span>
+            </button>
+            <button class="bk-rail-step" data-step="3" type="button" disabled>
+              <svg class="bk-rail-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8.3" r="3.3" stroke="currentColor" stroke-width="1.7"/><path d="M4.5 20c0-3.87 3.36-6.5 7.5-6.5s7.5 2.63 7.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <span class="bk-rail-label">Your Details</span>
+            </button>
+            <button class="bk-rail-step" data-step="4" type="button" disabled>
+              <svg class="bk-rail-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.3" stroke="currentColor" stroke-width="1.7"/><path d="M9 3.5H15V5.5C15 6.05 14.55 6.5 14 6.5H10C9.45 6.5 9 6.05 9 5.5V3.5Z" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5L11 15L15.5 10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span class="bk-rail-label">Review</span>
+            </button>
+            <button class="bk-rail-step bk-rail-step-fixed" data-step="5" type="button">
+              <svg class="bk-rail-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20L20.5 12L4 4L4 10.5L14.5 12L4 13.5L4 20Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              <span class="bk-rail-label">Send</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bk-grid">
+          <div class="bk-panel">
+            <form id="bk-form" novalidate>
+
+              <!-- Step 1 — Dates & Party -->
+              <div class="bk-step is-current" data-step="1">
+                <div class="bk-step-head">
+                  <h2>When are you sailing in?</h2>
+                  <p>Pick your arrival and departure dates.</p>
+                </div>
+                <div class="bk-field-row">
+                  <div class="bk-field">
+                    <label for="bk-arrival-trigger">Arrival</label>
+                    <div class="bk-date-field">
+                      <svg class="bk-date-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 3V6.2M16 3V6.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                      <button type="button" class="bk-date-trigger" id="bk-arrival-trigger" data-empty="true" aria-haspopup="dialog" aria-expanded="false">dd/mm/yyyy</button>
+                      <input type="hidden" id="bk-arrival" name="arrival" required />
+                    </div>
+                    <input type="hidden" id="bk-arrival-time" name="arrivalTime" value="14:00" />
+                  </div>
+                  <div class="bk-field">
+                    <label for="bk-departure-trigger">Departure</label>
+                    <div class="bk-date-field">
+                      <svg class="bk-date-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 3V6.2M16 3V6.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                      <button type="button" class="bk-date-trigger" id="bk-departure-trigger" data-empty="true" aria-haspopup="dialog" aria-expanded="false">dd/mm/yyyy</button>
+                      <input type="hidden" id="bk-departure" name="departure" required />
+                    </div>
+                    <input type="hidden" id="bk-departure-time" name="departureTime" value="12:00" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 2 — Choose Your Stay -->
+              <div class="bk-step" data-step="2">
+                <div class="bk-step-head">
+                  <h2>Choose your stay</h2>
+                  <p>Three ways to settle into the rhythm of the island. Pick the one that suits your party.</p>
+                </div>
+                <div class="bk-room-grid" id="bk-room-grid">
+                  <div class="bk-room" data-room="Double Room" data-price="65" tabindex="0" role="button" aria-pressed="false">
+                    <div class="bk-room-check">✓</div>
+                    <div class="bk-room-media">
+                      <div class="bk-room-img-wrap" data-room-gallery>
+                        <img loading="lazy" decoding="async" class="bk-room-photo" src="img/room/double.webp" alt="Double Room" data-angles="img/room/double.webp|img/room/double1.webp|img/room/double2.webp" />
+                      </div>
+                      <div class="bk-room-angles" role="tablist" aria-label="Double Room angles">
+                        <button type="button" class="bk-room-angle is-active" style="background-image:url('img/room/double.webp')" aria-label="Angle 1 of 3" aria-pressed="true"></button>
+                        <button type="button" class="bk-room-angle" style="background-image:url('img/room/double1.webp')" aria-label="Angle 2 of 3" aria-pressed="false"></button>
+                        <button type="button" class="bk-room-angle" style="background-image:url('img/room/double2.webp')" aria-label="Angle 3 of 3" aria-pressed="false"></button>
+                      </div>
+                    </div>
+                    <div class="bk-room-body">
+                      <h3>Double Room</h3>
+                      <p>A relaxed room built for two, steps from the shoreline.</p>
+                      <div class="bk-room-price"><span>Per night</span><strong>$65<small>+tax</small></strong></div>
+                      <a class="bk-room-more-details" href="double-room.html">More Details <span aria-hidden="true">→</span></a>
+                    </div>
+                  </div>
+                  <div class="bk-room" data-room="Triple Room" data-price="80" tabindex="0" role="button" aria-pressed="false">
+                    <div class="bk-room-check">✓</div>
+                    <div class="bk-room-media">
+                      <div class="bk-room-img-wrap" data-room-gallery>
+                        <img loading="lazy" decoding="async" class="bk-room-photo" src="img/room/triple.webp" alt="Triple Room" data-angles="img/room/triple.webp|img/room/triple1.webp|img/room/triple2.webp" />
+                      </div>
+                      <div class="bk-room-angles" role="tablist" aria-label="Triple Room angles">
+                        <button type="button" class="bk-room-angle is-active" style="background-image:url('img/room/triple.webp')" aria-label="Angle 1 of 3" aria-pressed="true"></button>
+                        <button type="button" class="bk-room-angle" style="background-image:url('img/room/triple1.webp')" aria-label="Angle 2 of 3" aria-pressed="false"></button>
+                        <button type="button" class="bk-room-angle" style="background-image:url('img/room/triple2.webp')" aria-label="Angle 3 of 3" aria-pressed="false"></button>
+                      </div>
+                    </div>
+                    <div class="bk-room-body">
+                      <h3>Triple Room</h3>
+                      <p>Extra space to spread out, ideal for three sharing the stay.</p>
+                      <div class="bk-room-price"><span>Per night</span><strong>$80<small>+tax</small></strong></div>
+                      <a class="bk-room-more-details" href="triple-room.html">More Details <span aria-hidden="true">→</span></a>
+                    </div>
+                  </div>
+                  <div class="bk-room" data-room="Family Room" data-price="95" tabindex="0" role="button" aria-pressed="false">
+                    <div class="bk-room-check">✓</div>
+                    <div class="bk-room-media">
+                      <div class="bk-room-img-wrap" data-room-gallery>
+                        <img loading="lazy" decoding="async" class="bk-room-photo" src="img/room/family%20room.webp" alt="Family Room" data-angles="img/room/family%20room.webp|img/room/family1.webp|img/room/family1.webp" />
+                      </div>
+                      <div class="bk-room-angles" role="tablist" aria-label="Family Room angles">
+                        <button type="button" class="bk-room-angle is-active" style="background-image:url('img/room/family%20room.webp')" aria-label="Angle 1 of 3" aria-pressed="true"></button>
+                        <button type="button" class="bk-room-angle" style="background-image:url('img/room/family1.webp')" aria-label="Angle 2 of 3" aria-pressed="false"></button>
+                        <button type="button" class="bk-room-angle" style="background-image:url('img/room/family1.webp')" aria-label="Angle 3 of 3" aria-pressed="false"></button>
+                      </div>
+                    </div>
+                    <div class="bk-room-body">
+                      <h3>Family Room</h3>
+                      <p>The largest of the three, with room enough for the whole family.</p>
+                      <div class="bk-room-price"><span>Per night</span><strong>$95<small>+tax</small></strong></div>
+                      <a class="bk-room-more-details" href="family-room.html">More Details <span aria-hidden="true">→</span></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 3 — Your Details -->
+              <div class="bk-step" data-step="3">
+                <div class="bk-step-head">
+                  <h2>Who should we expect?</h2>
+                  <p>Share a few details and our island team will shape a considered stay around you.</p>
+                </div>
+                <div class="bk-field-row">
+                  <div class="bk-field bk-field-icon">
+                    <label for="bk-name">Full name</label>
+                    <div class="bk-input-wrap">
+                      <svg class="bk-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20.2c1.2-3.4 4-5.4 7.5-5.4s6.3 2 7.5 5.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                      <input type="text" id="bk-name" name="name" placeholder="Your name" required />
+                    </div>
+                  </div>
+                  <div class="bk-field bk-field-icon">
+                    <label for="bk-email">Email</label>
+                    <div class="bk-input-wrap">
+                      <svg class="bk-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 6.5h17v11h-17v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 7l8 6.2L20 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <input type="email" id="bk-email" name="email" placeholder="you@example.com" required />
+                    </div>
+                  </div>
+                </div>
+                <div class="bk-field-row bk-field-row-single">
+                  <div class="bk-field">
+                    <label for="bk-phone">Contact number</label>
+                    <div class="bk-phone-row">
+                      <div class="bk-code-select" id="bk-code-select">
+                        <button type="button" class="bk-code-trigger" id="bk-code-trigger" aria-haspopup="listbox" aria-expanded="false">
+                          <span class="bk-code-flag" id="bk-code-flag">🇲🇻</span>
+                          <span class="bk-code-value" id="bk-code-value">+960</span>
+                          <span class="bk-code-caret">▾</span>
+                        </button>
+                        <div class="bk-code-panel" id="bk-code-panel">
+                          <input type="text" class="bk-code-search" id="bk-code-search" placeholder="Search country or code" autocomplete="off" />
+                          <div class="bk-code-list" id="bk-code-list" role="listbox" aria-label="Country code"></div>
+                        </div>
+                      </div>
+                      <input type="tel" id="bk-phone" name="phone" placeholder="700 2020" inputmode="numeric" required />
+                    </div>
+                    <span class="bk-hint" id="bk-phone-hint">Pick your country code, then type your number</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 4 — Review -->
+              <div class="bk-step" data-step="4">
+                <div class="bk-step-head">
+                  <h2>Review your booking</h2>
+                  <p>Everything below is what we'll hold for you. Download your booking summary, then confirm to continue on WhatsApp.</p>
+                </div>
+                <div class="bk-review-list" id="bk-review-list"></div>
+                <div class="bk-review-download">
+                  <div class="bk-download-row">
+                    <a class="bk-btn bk-btn-download" id="bk-review-download-link" href="#" download>Download Booking Summary PDF <span>↓</span></a>
+                    <span class="bk-download-cursor" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 3.5 6 17.5 9.6 14.2 11.7 19.4 14 18.4 11.9 13.2 16.6 12.8 6 3.5Z" fill="#17232a" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                    </span>
+                  </div>
+                  <div class="bk-download-notice">
+                    <span class="bk-download-notice-icon">!</span>
+                    <p><strong>Download the PDF</strong> — required to continue.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bk-actions" id="bk-actions">
+                <span class="bk-next-wrap">
+                  <button type="button" class="bk-btn bk-btn-primary" id="bk-next" disabled>Next <span>→</span></button>
+                  <span class="bk-download-cursor bk-next-cursor" id="bk-next-cursor" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 3.5 6 17.5 9.6 14.2 11.7 19.4 14 18.4 11.9 13.2 16.6 12.8 6 3.5Z" fill="#17232a" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                  </span>
+                </span>
+              </div>
+            </form>
+
+            <div class="bk-success" data-step="success" id="bk-success">
+              <span class="bk-step-eyebrow" style="display:block;">One step left</span>
+              <h2><span style="white-space:nowrap;">Send this on</span> <em>WhatsApp</em></h2>
+              <p>Your booking isn't confirmed yet. Tap below to send your summary on WhatsApp so our team can confirm availability.</p>
+
+              <div class="bk-success-actions">
+                <a class="bk-btn bk-btn-whatsapp" id="bk-whatsapp-link" href="#" target="_blank" rel="noopener">
+                  <svg class="bk-whatsapp-mark" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.336-.943.164-.464.164-.86.114-.943-.049-.088-.182-.137-.38-.232"/></svg>
+                  <span>Continue on WhatsApp</span>
+                  <span class="bk-btn-arrow">→</span>
+                </a>
+              </div>
+
+              <div class="bk-success-note">
+                <span class="bk-success-note-icon">!</span>
+                <p><strong>Not opening?</strong> Message +960 989 8130.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bk-ticket-wrap reveal">
+            <div class="bk-ticket" id="bk-ticket">
+              <div class="bk-ticket-top">
+                <span class="bk-ticket-eyebrow">Your reservation note</span>
+              </div>
+              <div class="bk-ticket-perf"></div>
+              <div class="bk-ticket-tear"></div>
+              <div class="bk-ticket-body">
+                <div class="bk-ticket-table">
+                <div class="bk-ticket-row is-empty" data-field="checkin"><span>Check-in</span><span>—</span></div>
+                <div class="bk-ticket-row is-empty" data-field="checkout"><span>Check-out</span><span>—</span></div>
+                <div class="bk-ticket-row is-empty" data-field="nights"><span>Nights</span><span>—</span></div>
+                <div class="bk-ticket-row is-empty" data-field="room"><span>Stay</span><span>Not chosen yet</span></div>
+                <div class="bk-ticket-row is-empty" data-field="name"><span>Name</span><span>—</span></div>
+                <div class="bk-ticket-row is-empty" data-field="phone"><span>Contact</span><span>—</span></div>
+                </div>
+                <div class="bk-ticket-total">
+                  <span>Estimated total</span>
+                  <strong id="bk-ticket-total">—</strong>
+                </div>
+                <div class="bk-ticket-code" id="bk-ticket-code">We'll confirm the details with you on WhatsApp</div>
+              </div>
+            </div>
+            <p class="bk-ticket-note">This is an enquiry, not a charge — our island team will follow up on WhatsApp to confirm availability before anything is booked.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="contact" class="site-footer-v2">
+      <div class="footer-v2-center reveal">
+        <div class="footer-v2-brand-row">
+          <img loading="lazy" decoding="async" class="footer-mark" src="img/logo/logo-white.png" alt="Dhaankolhu Rasdhoo Island logo" />
+        </div>
+        <span class="footer-v2-tag">Local Island</span>
+        <div class="footer-v2-socials">
+          <a class="footer-v2-social-btn" href="mailto:info@dhaankolhu.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="5.5" width="17" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 7L12 12.5L19.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          <a class="footer-v2-social-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 8.5h2V5.6c-.35-.05-1.53-.15-2.9-.15-2.87 0-4.84 1.75-4.84 4.97v2.63H6.4v3.3h2.86V21h3.4v-4.65h2.75l.44-3.3h-3.19V10.8c0-.96.27-1.6 1.64-1.6Z" fill="currentColor"/></svg></a>
+          <a class="footer-v2-social-btn" href="https://www.instagram.com/dhaankolhu/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg></a>
+        </div>
+        <p class="footer-v2-desc">A peaceful beach destination where the ocean meets serenity. Nestled along the turquoise shores of Rasdhoo, we offer an authentic taste of local island life paired with effortless comfort. Relax, unwind, and create lasting memories by the sea.</p>
+        <p class="footer-v2-address">North Ari Atoll, Maldives</p>
+        <p class="footer-v2-contact">
+          <a href="mailto:info@dhaankolhu.com">info@dhaankolhu.com</a><br />
+          <a href="tel:+9609898130">+960 989 8130</a>
+        </p>
+      </div>
+      <div class="footer-v2-bottom">
+        <span>© 2026 Dhaankolhu Rasdhoo Island. All rights reserved.</span>
+        <div class="footer-v2-legal"><span>Website Designed &amp; Developed by AdFlare</span></div>
+      </div>
+    </footer>
+  </div>
+  <!-- jsPDF: generates the booking summary as a real PDF file
+       so guests can share/download an actual document (not just text). -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+  <!-- Room photo viewer: same "grow from the card" morph used on the main
+       site (index.html's highlight-expand-overlay) — reuses the identical
+       CSS classes from style.css so the effect is pixel-for-pixel the same,
+       just driven by book-now.js instead, and browsing a room's own 3
+       angles instead of cycling between sibling cards. -->
+  <div class="highlight-expand-overlay" id="room-expand-overlay">
+    <div class="highlight-expand-backdrop" id="room-expand-backdrop"></div>
+    <div class="highlight-expand-panel is-static-gallery room-gallery-panel" id="room-expand-panel" role="dialog" aria-modal="true" aria-label="Room photos">
+      <button type="button" class="highlight-expand-close" id="room-expand-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="highlight-expand-image"><img loading="lazy" decoding="async" id="room-expand-img" src="" alt="" /></div>
+      <div class="highlight-expand-content">
+        <h3 class="highlight-expand-title" id="room-expand-title"></h3>
+        <p class="highlight-expand-desc" id="room-expand-desc"></p>
+        <div class="highlight-expand-tags" id="room-expand-tags" style="display:none;"></div>
+        <div class="room-expand-thumbs" id="room-expand-thumbs"></div>
+      </div>
+      <div class="highlight-expand-nav" id="room-expand-nav">
+        <button type="button" class="highlight-expand-nav-btn" id="room-expand-prev" aria-label="Previous angle">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button type="button" class="highlight-expand-nav-btn" id="room-expand-next" aria-label="Next angle">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="book-now.js"></script>
+</body>
+</html>
