@@ -893,3 +893,34 @@ html:not(.is-preload) .site-header .header-cta {
 .bk-pax input::-webkit-outer-spin-button, .bk-pax input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .bk-occupancy-note { margin: 1.1rem 0 0; padding: .75rem 1rem; border: 1px solid var(--bk-line); border-radius: 10px; background: var(--bk-mist); color: var(--ink); font-size: .72rem; line-height: 1.5; }
 .bk-occupancy-note[hidden] { display: none; }
+
+/* Step 1 layout — two equal columns, both rows share the same edges:
+   Arrival | Departure
+   Pax     | Check-in + Check-out (chips split the column equally) */
+.bk-field-row:has(> .bk-field:nth-child(2):last-child) { grid-template-columns: 1fr 1fr; column-gap: clamp(1rem, 2.4vw, 1.6rem); }
+.bk-field-row-pax { max-width: none; align-items: start; }
+.bk-field-row-pax .bk-field { margin-top: 1.6rem; }
+.bk-field-row-pax .bk-pax { display: flex; width: 100%; gap: .6rem; }
+.bk-field-row-pax .bk-pax input { flex: 1 1 auto; width: auto; min-width: 0; font-size: .86rem; }
+/* one unified, read-only info panel: two halves split by a hairline divider */
+.bk-times { display: grid; grid-template-columns: 1fr 1fr; min-height: 46px; border: 1px solid rgba(186,141,92,.32); border-radius: 10px; background: #fbf8f3; overflow: hidden; }
+.bk-time-chip { display: flex; align-items: center; gap: .7rem; padding: 0 .9rem; min-width: 0; white-space: nowrap; }
+.bk-time-chip + .bk-time-chip { border-left: 1px solid rgba(186,141,92,.28); }
+.bk-time-icon { box-sizing: content-box; width: 15px; height: 15px; padding: 5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(186,141,92,.3); color: var(--brass); flex: none; }
+.bk-time-text { display: grid; gap: .14rem; line-height: 1.1; min-width: 0; }
+.bk-time-label { font-size: .52rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-foreground); }
+.bk-time-value { font-size: .84rem; font-weight: 600; color: var(--ink); }
+.bk-field-row-pax .bk-hint { margin-top: .2rem; }
+/* tighter gap between the heading and the first row of fields */
+.bk-step[data-step="1"] .bk-step-head { margin-bottom: .2rem; }
+@media (max-width: 640px) {
+  .bk-field-row:has(> .bk-field:nth-child(2):last-child) { grid-template-columns: 1fr; }
+  .bk-field-row-pax .bk-field { margin-top: 1.2rem; }
+  .bk-time-chip { padding: 0 .6rem; gap: .5rem; }
+  .bk-time-icon { width: 13px; height: 13px; padding: 4px; }
+}
+
+/* Step 1: centered text in the date fields (icon stays on the left; equal
+   side padding keeps the date exactly centered) + matching check-in/out. */
+.bk-field .bk-date-trigger { justify-content: center; text-align: center; padding: 0 2.5rem; }
+.bk-time-chip { justify-content: center; }

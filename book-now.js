@@ -197,7 +197,9 @@
   var ticketTotalEl = document.getElementById("bk-ticket-total");
   var ticketCodeEl = document.getElementById("bk-ticket-code");
 
-  var state = { arrival: "", departure: "", arrivalTime: "14:00", departureTime: "12:00", room: null, price: 0, pax: 0, name: "", email: "", phone: "", country: "" };
+  var CHECKIN_TIME = "13:00";   /* check-in  1:00 PM */
+  var CHECKOUT_TIME = "12:00";  /* check-out 12:00 PM */
+  var state = { arrival: "", departure: "", arrivalTime: CHECKIN_TIME, departureTime: CHECKOUT_TIME, room: null, price: 0, pax: 0, name: "", email: "", phone: "", country: "" };
   var currentStep = 1;
   var TOTAL_STEPS = 4;
   var pdfDownloaded = false;
@@ -293,6 +295,11 @@
     if (!iso) return "";
     var p = parseISO(iso);
     return p.d + " " + MONTH_NAMES[p.m].slice(0, 3) + " " + p.y;
+  }
+
+  /* date text shown inside the Arrival / Departure fields (times are shown beside the pax field) */
+  function triggerText(iso, hhmm) {
+    return iso ? formatDisplayDate(iso) : "dd/mm/yyyy";
   }
 
   function to12Hour(hhmm) {
@@ -437,7 +444,7 @@
 
     controller.setValue = function (iso) {
       controller.hiddenInput.value = iso;
-      controller.triggerEl.textContent = iso ? formatDisplayDate(iso) : "dd/mm/yyyy";
+      controller.triggerEl.textContent = triggerText(iso, controller.hiddenInput === arrivalInput ? CHECKIN_TIME : CHECKOUT_TIME);
       controller.triggerEl.setAttribute("data-empty", iso ? "false" : "true");
       controller.hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
     };
@@ -1355,12 +1362,14 @@
     /* dates */
     arrivalInput.value = state.arrival || "";
     departureInput.value = state.departure || "";
-    arrivalTrigger.textContent = state.arrival ? formatDisplayDate(state.arrival) : "dd/mm/yyyy";
+    arrivalTrigger.textContent = triggerText(state.arrival, CHECKIN_TIME);
     arrivalTrigger.setAttribute("data-empty", state.arrival ? "false" : "true");
-    departureTrigger.textContent = state.departure ? formatDisplayDate(state.departure) : "dd/mm/yyyy";
+    departureTrigger.textContent = triggerText(state.departure, CHECKOUT_TIME);
     departureTrigger.setAttribute("data-empty", state.departure ? "false" : "true");
-    arrivalTimeInput.value = state.arrivalTime || "14:00";
-    departureTimeInput.value = state.departureTime || "12:00";
+    state.arrivalTime = CHECKIN_TIME;
+    arrivalTimeInput.value = CHECKIN_TIME;
+    state.departureTime = CHECKOUT_TIME;
+    departureTimeInput.value = CHECKOUT_TIME;
     syncDepartureMin();
 
     /* stay/room */

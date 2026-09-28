@@ -134,7 +134,7 @@
                       <button type="button" class="bk-date-trigger" id="bk-arrival-trigger" data-empty="true" aria-haspopup="dialog" aria-expanded="false">dd/mm/yyyy</button>
                       <input type="hidden" id="bk-arrival" name="arrival" required />
                     </div>
-                    <input type="hidden" id="bk-arrival-time" name="arrivalTime" value="14:00" />
+                    <input type="hidden" id="bk-arrival-time" name="arrivalTime" value="13:00" />
                   </div>
                   <div class="bk-field">
                     <label for="bk-departure-trigger">Departure</label>
@@ -146,7 +146,7 @@
                     <input type="hidden" id="bk-departure-time" name="departureTime" value="12:00" />
                   </div>
                 </div>
-                <div class="bk-field-row bk-field-row-single">
+                <div class="bk-field-row bk-field-row-pax">
                   <div class="bk-field">
                     <label for="bk-pax">Number of pax</label>
                     <div class="bk-pax">
@@ -155,6 +155,20 @@
                       <button type="button" class="bk-pax-btn" id="bk-pax-plus" aria-label="More guests">+</button>
                     </div>
                     <span class="bk-hint">Total number of guests staying</span>
+                  </div>
+                  <div class="bk-field bk-times-field">
+                    <label>Check-in / Check-out</label>
+                    <div class="bk-times">
+                      <div class="bk-time-chip">
+                        <svg class="bk-time-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span class="bk-time-text"><span class="bk-time-label">Check-in</span><span class="bk-time-value">1:00 PM</span></span>
+                      </div>
+                      <div class="bk-time-chip">
+                        <svg class="bk-time-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span class="bk-time-text"><span class="bk-time-label">Check-out</span><span class="bk-time-value">12:00 PM</span></span>
+                      </div>
+                    </div>
+                    <span class="bk-hint">Standard times for all rooms</span>
                   </div>
                 </div>
               </div>
