@@ -362,7 +362,7 @@
     // later while sliding left/right.
     var expCards = [].slice.call(expTrack.querySelectorAll(".ar-card"));
     function expRevealAll() {
-      expCards.forEach(function (c, k) { show(c, Math.min(k, 4) * 90); });
+      expCards.forEach(function (c, k) { show(c, 150 + Math.min(k, 3) * 240); });
     }
     var expIo = "IntersectionObserver" in window ? new IntersectionObserver(function (es) {
       if (es.some(function (e) { return e.isIntersecting; })) { expRevealAll(); expIo.disconnect(); }
@@ -526,7 +526,7 @@
     update();
   }
 
-  function revealAll() { cards.forEach(function (c, k) { c.style.setProperty("--d", Math.min(k, 4) * 90 + "ms"); c.classList.add("is-in"); }); }
+  function revealAll() { cards.forEach(function (c, k) { c.style.setProperty("--d", 150 + Math.min(k, 3) * 240 + "ms"); c.classList.add("is-in"); }); }
   if ("IntersectionObserver" in window) {
     var io = new IntersectionObserver(function (es) {
       if (es.some(function (e) { return e.isIntersecting; })) { revealAll(); io.disconnect(); }

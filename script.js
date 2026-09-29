@@ -478,6 +478,22 @@
         }
       }, { passive: true });
 
+      /* overflow:hidden boxes can still be scrolled by the browser (native #anchor jump,
+         focus(), find-in-page). If that happens to the hero or its sticky layer, the whole
+         chapter slides up and the bottom of the picture is cut off — and window's scroll
+         listener above can't see it. Snap them back the moment it happens. */
+      var storyInnerScrollers = [heroSection, heroSection.querySelector(".story-sticky")].filter(Boolean);
+      function resetStoryInnerScroll() {
+        storyInnerScrollers.forEach(function (el) {
+          if (el.scrollTop) el.scrollTop = 0;
+          if (el.scrollLeft) el.scrollLeft = 0;
+        });
+      }
+      document.addEventListener("scroll", function (e) {
+        if (storyInnerScrollers.indexOf(e.target) !== -1) resetStoryInnerScroll();
+      }, true);
+      resetStoryInnerScroll();
+
       function setHeaderForStep(step) {
         heroStoryPinnedActive = locked;
         if (header) header.classList.toggle("is-story-hidden", locked && step > 0 && !climbingBack);
@@ -852,13 +868,44 @@
          anchor-jump — so the link silently did nothing and the Others
          dropdown's Highlights/Gallery links (and About/Experience/
          Accommodation from other pages) all appeared broken. */
-      var initialHash = window.location.hash;
+      /* Start the About animations (birds -> text wipe) only once the page is really on screen:
+         fade-in finished (is-preload gone), window loaded, fonts ready — then two painted frames
+         and a short beat. Otherwise the timeline runs while the page is still hidden / janking and
+         the text pops in before the birds have crossed. 3s failsafe so it can never stay paused. */
+      function releaseAboutHold() {
+        var root = document.documentElement;
+        if (!root.classList.contains("about-hold")) return;
+        var done = false;
+        function go() {
+          if (done) return; done = true;
+          window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(function () {
+              window.setTimeout(function () { root.classList.remove("about-hold"); }, 250);
+            });
+          });
+        }
+        var loaded = document.readyState === "complete"
+          ? Promise.resolve()
+          : new Promise(function (res) { window.addEventListener("load", res, { once: true }); });
+        var fonts = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+        var visible = new Promise(function (res) {
+          (function check() { if (!root.classList.contains("is-preload")) res(); else window.setTimeout(check, 40); })();
+        });
+        Promise.all([loaded, fonts, visible]).then(function () { window.setTimeout(go, 220); }, go);
+        window.setTimeout(go, 3000);
+      }
+      var initialHash = window.__initialHash || window.location.hash;
       if (initialHash === "#about") {
         window.setTimeout(function () {
           locked = true;
           heroStoryPinnedActive = true;
           setLockClasses(true);
+          if (window.scrollY !== 0) window.scrollTo(0, 0);
+          resetStoryInnerScroll();
           goToStep(1);
+          releaseAboutHold();
+          /* put the hash back in the address bar (replaceState never scrolls) */
+          try { if (window.location.hash !== "#about") history.replaceState(null, "", window.location.pathname + window.location.search + "#about"); } catch (err) {}
         }, 30);
       } else if (initialHash === "#home") {
         /* "index.html#home" (what the logo link leaves in the URL) is just

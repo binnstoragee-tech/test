@@ -4,7 +4,12 @@
   <meta charset="UTF-8" />
   <!-- Smooth cross-page transitions: hide the page instantly (before first paint)
        so script.js can fade it in — this inline script MUST stay first in <head>. -->
-  <script>document.documentElement.classList.add("is-preload");</script>
+  <script>document.documentElement.classList.add("is-preload");
+/* Arriving as index.html#about (e.g. from Offers): take the hash out of the URL BEFORE the page is
+   parsed, so the browser never does its own native jump into the pinned hero (that jump shifted the
+   hero's contents ~30px up and cut the bottom off). script.js reads window.__initialHash and steps
+   the hero to the About chapter itself, then puts the hash back. */
+try { if (location.hash === "#about") { window.__initialHash = "#about"; document.documentElement.classList.add("about-hold"); history.replaceState(null, "", location.pathname + location.search); } } catch (e) {}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0b6e70" />
   <meta name="description" content="Dhaankolhu Rasdhoo Island - a quiet stretch of the Indian Ocean, kept simple, kept beautiful." />
@@ -828,6 +833,73 @@
       .site-header .desktop-nav > *,
       .site-header .header-cta { transition: none !important; opacity: 1 !important; transform: none !important; }
     }
+  
+    /* ===== About: seagulls fly past -> text is revealed behind them ->
+       palm leaves sway on the right (loops) ===== */
+    .about-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+    .about-scene img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+    .story-panel-about .story-panel-inner { position: relative; z-index: 2; opacity: 0; }
+
+    /* 1) macaws: left -> right, gentle bobbing (image is pre-flipped to face right) */
+    .about-birds { position: absolute; left: 0; top: clamp(12%, 17vh, 23%); width: clamp(130px, 19vw, 310px); opacity: 0; z-index: 1; will-change: transform, opacity; }
+    .about-birds img { filter: drop-shadow(0 16px 14px rgba(0,0,0,.28)); }
+    .story-panel-about.is-active .about-birds { animation: birdsFly 1.8s linear .15s forwards; }
+    .story-panel-about.is-active .about-birds img { animation: birdsBob .8s ease-in-out infinite; }
+    @keyframes birdsFly {
+      0%   { opacity: 0; transform: translate3d(-125%, 7vh, 0); }
+      7%   { opacity: 1; }
+      93%  { opacity: 1; }
+      100% { opacity: 0; transform: translate3d(calc(100vw + 20%), -9vh, 0); }
+    }
+    @keyframes birdsBob { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-14px) rotate(1.5deg); } }
+
+    /* 2) text: revealed left -> right right behind the birds' tail */
+    .story-panel-about.is-active .story-panel-inner { animation: aboutTextWipe .8s cubic-bezier(.3, 0, .4, 1) .85s forwards; }
+    @keyframes aboutTextWipe {
+      0%   { opacity: 0; clip-path: inset(-14px 100% -14px -14px); }
+      12%  { opacity: 1; }
+      100% { opacity: 1; clip-path: inset(-14px -14px -14px -14px); }
+    }
+
+    /* 4) palm leaf: hangs from the top-right corner, slides in, then sways in the wind forever */
+    .about-leaf { position: absolute; top: -2vw; right: -2vw; width: clamp(170px, 27vw, 440px); opacity: 0; z-index: 1; transform-origin: 100% 0; }
+    .leaf-sway { display: block; transform-origin: 100% 0; }
+    .leaf-sway img { transform-origin: 100% 0; filter: drop-shadow(-10px 16px 16px rgba(0,0,0,.28)); }
+    .story-panel-about.is-active .about-leaf { animation: leafIn 1.6s cubic-bezier(.22, .68, 0, 1) 1.1s forwards; }
+    .story-panel-about.is-active .leaf-sway { animation: leafSway 6.5s ease-in-out 1.1s infinite alternate; }
+    .story-panel-about.is-active .leaf-sway img { animation: leafFlutter 3.2s ease-in-out 1.1s infinite; }
+    @keyframes leafIn { 0% { opacity: 0; transform: translateX(45%) rotate(6deg); } 100% { opacity: 1; transform: none; } }
+    @keyframes leafSway { 0% { transform: rotate(-1.6deg); } 100% { transform: rotate(2.6deg); } }
+    @keyframes leafFlutter { 0%,100% { transform: rotate(0) skewX(0); } 30% { transform: rotate(-1.2deg) skewX(1.4deg); } 65% { transform: rotate(.9deg) skewX(-.9deg); } }
+
+    /* 4b) second palm leaf: exact mirror of the first, hanging from the top-LEFT corner.
+       The wrapper only flips horizontally (no animation of its own), so the leafIn / sway /
+       flutter animations on the inner leaf run unchanged and simply play mirrored. */
+    .about-leaf-mirror { position: absolute; inset: 0; transform: scaleX(-1); pointer-events: none; z-index: 1; }
+
+    /* Arriving as index.html#about: keep every About animation paused at its start frame until the
+       page is actually visible and settled (script.js removes .about-hold), so the birds always fly
+       across BEFORE the text is revealed instead of the timeline running while the page is still hidden. */
+    html.about-hold .story-panel-about .about-birds,
+    html.about-hold .story-panel-about .about-birds img,
+    html.about-hold .story-panel-about .story-panel-inner,
+    html.about-hold .story-panel-about .about-leaf,
+    html.about-hold .story-panel-about .leaf-sway,
+    html.about-hold .story-panel-about .leaf-sway img { animation-play-state: paused !important; }
+
+    @media (max-width: 640px) {
+      .about-birds { width: clamp(100px, 32vw, 160px); top: 11%; }
+      .about-leaf { width: clamp(120px, 38vw, 200px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .story-panel-about .story-panel-inner { opacity: 1; }
+      .about-birds { display: none; }
+      .about-leaf { opacity: 1; }
+      .story-panel-about.is-active .story-panel-inner,
+      .story-panel-about.is-active .about-leaf,
+      .story-panel-about.is-active .leaf-sway,
+      .story-panel-about.is-active .leaf-sway img { animation: none; }
+    }
   </style>
   <title>Dhaankolhu Rasdhoo</title>
 </head>
@@ -852,7 +924,7 @@
 
         <div class="story-panel story-panel-welcome is-active" data-story-panel="0"><div class="hero-content"><span class="eyebrow hero-eyebrow hero-rise">Welcome to</span><h1 class="hero-title hero-rise">Dhaankolhu <br class="hero-title-break">Rasdhoo</h1><p class="hero-copy hero-rise">A quiet stretch of the Indian Ocean, kept simple, kept beautiful.</p></div></div>
 
-        <div class="story-panel story-panel-about" data-story-panel="1" id="about"><div class="story-panel-inner"><span class="eyebrow">About</span><h2>Comfortable rooms, <br><em>a beautiful island</em></h2><p>Warm wooden interiors and cozy, well-kept rooms made for rest — set on one of the Maldives' most beautiful local islands, with coral sands, warm lagoons, and calm all around you.</p></div></div>
+        <div class="story-panel story-panel-about" data-story-panel="1" id="about"><div class="about-scene" aria-hidden="true"><div class="about-birds"><img src="img/macaws.webp" alt="" width="760" height="831" decoding="async"></div><div class="about-leaf"><span class="leaf-sway"><img src="img/palm-leaf.webp" alt="" width="473" height="711" decoding="async"></span></div><div class="about-leaf-mirror"><div class="about-leaf"><span class="leaf-sway"><img src="img/palm-leaf.webp" alt="" width="473" height="711" decoding="async"></span></div></div></div><div class="story-panel-inner"><span class="eyebrow">About</span><h2>Comfortable rooms, <br><em>a beautiful island</em></h2><p>Warm wooden interiors and cozy, well-kept rooms made for rest — set on one of the Maldives' most beautiful local islands, with coral sands, warm lagoons, and calm all around you.</p></div></div>
 
 
 
