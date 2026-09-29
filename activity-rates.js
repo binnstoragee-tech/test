@@ -56,39 +56,11 @@
     evening: '<path d="M7.500 3h9v5.500a4.500 4.500 0 01-9 0z"/><path d="M12 13v7.500M8 21h8"/><path d="M7.500 8h9"/>',
     trips: '<circle cx="12" cy="12" r="9"/><path d="M15.700 8.300l-2 5.400-5.400 2 2-5.400z"/>'
   };
-  var CATS = [
-    { id: "all", label: "All", full: "All Activities" },
-    { id: "snorkel", label: "Snorkeling" },
-    { id: "fishing", label: "Fishing" },
-    { id: "evening", label: "Cruise & Dining" },
-    { id: "trips", label: "Day Trips & Expeditions" }
-  ];
+  var CATS = window.DHK_ACTIVITY_CATS || [];
   function catIcon(id) { return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICO[id] + "</svg>"; }
   var CAT_NAME = { snorkel: "Snorkeling", fishing: "Fishing", evening: "Cruise & Dining", trips: "Day Trips" };
 
-  // f = fallback photo already on the site (used until img/activities/<slug>.webp exists)
-  // t = [1 pax, 2 pax, 3+ pax]   g = group-only price (per person)   gl = price label   note = pax rule
-  var DATA = [
-    { n: "1 Spot Snorkeling", f: "img/experience/snorkeling.webp", c: "snorkel", d: "45 min", t: [40, 38, 35], i: ["Snorkel Gear", "Water", "Towel", "Guide", "GoPro Pics & Vids"], feat: true },
-    { n: "3 Spot Snorkeling", f: "img/experience/snorkeling.webp", c: "snorkel", d: "2 hr", t: [85, 85, 75], i: ["Snorkel Gear", "Water", "Towel", "Guide", "GoPro Pics & Vids"] },
-    { n: "Manta Snorkeling", f: "img/experience/snorkeling.webp", c: "snorkel", d: "1 hr 30 min", t: [90, 80, 70], i: ["Snorkel Gear", "Water", "Towel", "Guide", "GoPro Pics & Vids"] },
-    { n: "Turtle Snorkeling", f: "img/experience/turtle.webp", c: "snorkel", d: "1 hr 30 min", t: [55, 50, 45], i: ["Snorkel Gear", "Water", "Towel", "Guide", "GoPro Pics & Vids"], feat: true },
-    { n: "Gangehi Shark Quest", f: "img/experience/shark.webp", c: "snorkel", d: "1 hr 30 min", g: 70, note: "Min 4 pax", i: ["Snorkel Gear", "Water", "Towel", "Guide", "GoPro Pics & Vids"] },
-
-    { n: "Night Fishing with BBQ Dinner", f: "img/experience/fishing.webp", c: "fishing", d: "2 hr", t: [65, 60, 55], i: ["Fishing Equipment", "Water", "Snacks", "Guide"], feat: true },
-    { n: "Day Fishing with BBQ Dinner", f: "img/experience/fishing.webp", c: "fishing", d: "2 hr", t: [65, 60, 55], i: ["Fishing Equipment", "Water", "Snacks", "Guide"] },
-    { n: "Big Game Fishing", f: "img/experience/fishing.webp", c: "fishing", d: "Per hour", g: 90, gl: "per hour", note: "Max 5 pax", i: ["Fishing Equipment", "Water", "Snacks", "Guide"] },
-
-    { n: "Sunset Cruise", f: "img/experience/dolpin.webp", c: "evening", d: "2 hr", t: [85, 80, 70], i: ["Snacks", "Water", "Drone Pics & Vids"], feat: true },
-    { n: "Beach Dinner", c: "evening", d: "2 hr", t: [100, 85, 75], i: ["Meal"] },
-    { n: "Sandbank Dinner", c: "evening", d: "3 hr", t: [150, 120, 100], i: ["Meal"] },
-
-    { n: "Sandbank Full Day Trip", c: "trips", d: "7 hr", t: [60, 50, 40], i: ["Lunch", "Snorkel Gear", "Water", "Towel", "Guide", "GoPro Pics & Vids"], feat: true },
-    { n: "Island Hopping", c: "trips", d: "8 hr", g: 100, note: "Min 4 pax", i: ["Meal", "Guide"] },
-    { n: "Madivaru Camping", c: "trips", d: "17 hr", g: 200, note: "Min 4 pax", i: ["Camping Tents", "Fishing Equipment", "Meal", "Water", "GoPro Pics & Vids"] },
-    { n: "Whale Shark Trip", f: "img/experience/shark.webp", c: "trips", d: "7 hr", g: 160, note: "Min 8 pax", i: ["Snorkel Gear", "Water", "Meal", "Towel", "Guide", "GoPro Pics & Vids"], feat: true },
-    { n: "Hanifaru Bay Manta", c: "trips", d: "8 hr", g: 200, note: "Min 4 pax", i: ["Snorkel Gear", "Water", "Meal", "Towel", "Guide", "GoPro Pics & Vids"] }
-  ];
+  var DATA = window.DHK_ACTIVITIES || [];
 
   var clock = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
   var group = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3.2 3.2 0 010 5.6M18 14.4c1.8.8 3 2.6 3 5.6"/></svg>';
@@ -266,8 +238,7 @@
           '<ul class="ar-incl">' + a.i.map(function (x) { return "<li>" + x + "</li>"; }).join("") + '</ul>' +
           '<p class="ar-modal-note">Rates are in US dollars, per person, and subject to a 10% service charge.</p>' +
         '</div>' +
-      '</div>' +
-      '<div class="ar-modal-foot"><a class="ar-book ar-modal-book" href="https://wa.me/' + WA + '?text=' + encodeURIComponent(msg) + '" target="_blank" rel="noopener">Book on WhatsApp ' + arrow + '</a></div>';
+      '</div>';
 
     // photo: img/activities/<slug>.webp -> site photo (f) -> gradient + icon placeholder
     var im = panel.querySelector(".ar-modal-media img"), stage = 0;

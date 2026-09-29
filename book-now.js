@@ -164,7 +164,7 @@
      instead of wherever the previous step happened to be scrolled to */
   var bkRailOuter = document.querySelector(".bk-rail-outer");
   function scrollPanelIntoView() {
-    var anchor = bkRailOuter || panel;
+    var anchor = (bkRailOuter && bkRailOuter.offsetParent) ? bkRailOuter : panel;
     if (!anchor) return;
     /* the fixed site header is ~106px tall once scrolled — this offset has
        to clear that plus a bit of breathing room, or the rail lands
@@ -186,9 +186,12 @@
   var arrivalTimeInput = document.getElementById("bk-arrival-time");
   var departureTimeInput = document.getElementById("bk-departure-time");
   var roomGrid = document.getElementById("bk-room-grid");
-  var paxInput = document.getElementById("bk-pax");
-  var paxMinus = document.getElementById("bk-pax-minus");
-  var paxPlus = document.getElementById("bk-pax-plus");
+  var adultsInput = document.getElementById("bk-adults");
+  var adultsMinus = document.getElementById("bk-adults-minus");
+  var adultsPlus = document.getElementById("bk-adults-plus");
+  var childrenInput = document.getElementById("bk-children");
+  var childrenMinus = document.getElementById("bk-children-minus");
+  var childrenPlus = document.getElementById("bk-children-plus");
   var occupancyNote = document.getElementById("bk-occupancy-note");
   var nameInput = document.getElementById("bk-name");
   var emailInput = document.getElementById("bk-email");
@@ -199,8 +202,8 @@
 
   var CHECKIN_TIME = "13:00";   /* check-in  1:00 PM */
   var CHECKOUT_TIME = "12:00";  /* check-out 12:00 PM */
-  var state = { arrival: "", departure: "", arrivalTime: CHECKIN_TIME, departureTime: CHECKOUT_TIME, room: null, price: 0, pax: 0, name: "", email: "", phone: "", country: "" };
-  var currentStep = 1;
+  var state = { arrival: "", departure: "", arrivalTime: CHECKIN_TIME, departureTime: CHECKOUT_TIME, room: null, price: 0, adults: 2, children: 0, pax: 2, name: "", email: "", phone: "", country: "", mode: "stay", actSlug: "" };
+  var currentStep = 1;   /* rooms only - the flow starts at Dates */
   var TOTAL_STEPS = 4;
   var pdfDownloaded = false;
 
@@ -299,7 +302,9 @@
 
   /* date text shown inside the Arrival / Departure fields (times are shown beside the pax field) */
   function triggerText(iso, hhmm) {
-    return iso ? formatDisplayDate(iso) : "dd/mm/yyyy";
+    if (!iso) return "Date";
+    var pd = parseISO(iso);
+    return String(pd.d).padStart(2, "0") + "-" + String(pd.m + 1).padStart(2, "0") + "-" + pd.y;
   }
 
   function to12Hour(hhmm) {
@@ -338,7 +343,7 @@
       '<span class="bk-cal-title" data-cal-title></span>' +
       '<button type="button" class="bk-cal-nav" data-cal-next aria-label="Next month"><svg viewBox="0 0 24 24" fill="none"><path d="M9 5L16 12L9 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
     '</div>' +
-    '<div class="bk-cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>' +
+    '<div class="bk-cal-weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>' +
     '<div class="bk-cal-grid" data-cal-grid></div>';
   document.body.appendChild(calPanel);
 
@@ -385,6 +390,8 @@
       var daysInPrevMonth = new Date(controller.viewY, controller.viewM, 0).getDate();
       var selected = controller.hiddenInput.value;
       var min = controller.min;
+      var rangeStart = arrivalInput.value, rangeEnd = departureInput.value;
+      var showRange = !isActivity() && rangeStart && rangeEnd && rangeEnd > rangeStart;
 
       var cellsHtml = "";
       for (var i = 0; i < 42; i++) {
@@ -404,7 +411,11 @@
         var classes = "bk-cal-day";
         if (isOutside) classes += " is-outside";
         if (iso === todayStr) classes += " is-today";
-        if (iso === selected) classes += " is-selected";
+        if (showRange) {
+          if (iso === rangeStart) classes += " is-selected is-range-start";
+          else if (iso === rangeEnd) classes += " is-selected is-range-end";
+          else if (iso > rangeStart && iso < rangeEnd) classes += " is-range";
+        } else if (iso === selected) classes += " is-selected";
         cellsHtml += '<button type="button" class="' + classes + '" data-iso="' + iso + '"' + (disabled ? " disabled" : "") + '>' + dayNum + "</button>";
       }
       calGridEl.innerHTML = cellsHtml;
@@ -483,7 +494,7 @@
     activeCal.close();
     /* guide the guest into picking the departure date next, same flow as
        the previous native-picker version */
-    if (wasArrival) {
+    if (wasArrival && !isActivity()) {
       window.setTimeout(function () { departureCal.open(); }, 150);
     }
   });
@@ -565,6 +576,8 @@
 
   function updateOccupancyNote() {
     if (!occupancyNote) return;
+    if (isActivity()) { updateActNote(); return; }
+    occupancyNote.classList.remove("is-error");
     var single = state.room === "Double Room" && state.pax === 1;
     occupancyNote.hidden = !single;
     occupancyNote.textContent = single
@@ -572,15 +585,43 @@
       : "";
   }
 
+  /* Guests are split into Adults (min 1) + Children (min 0). state.pax stays
+     the TOTAL head-count, so activity limits / rates and the single-occupancy
+     check keep working exactly as before. */
+  function clampGuests(a, c) {
+    a = Math.max(1, Math.min(PAX_MAX, Math.floor(Number(a)) || 1));
+    c = Math.max(0, Math.min(PAX_MAX - a, Math.floor(Number(c)) || 0));
+    return { a: a, c: c };
+  }
+
+  function paxText() {
+    var a = state.adults || 0, c = state.children || 0;
+    if (!a && !c) return "";
+    var t = a + (a === 1 ? " Adult" : " Adults");
+    if (c) t += ", " + c + (c === 1 ? " Child" : " Children");
+    return t;
+  }
+
   function updatePaxButtons() {
-    if (paxMinus) paxMinus.disabled = !(state.pax > 1);
-    if (paxPlus) paxPlus.disabled = state.pax >= PAX_MAX;
+    var total = (state.adults || 0) + (state.children || 0);
+    adultsMinus.disabled = !(state.adults > 1);
+    adultsPlus.disabled = total >= PAX_MAX;
+    childrenMinus.disabled = !(state.children > 0);
+    childrenPlus.disabled = total >= PAX_MAX;
+    childrenInput.max = String(PAX_MAX - (state.adults || 1));
+    adultsInput.max = String(PAX_MAX - (state.children || 0));
   }
 
-  function setPax(n) {
-    n = Math.max(0, Math.min(PAX_MAX, Number(n) || 0));
-    state.pax = n;
-    paxInput.value = n ? String(n) : "";
+  function setGuests(a, c, fromInput) {
+    var g = clampGuests(a, c);
+    state.adults = g.a;
+    state.children = g.c;
+    state.pax = g.a + g.c;
+    /* while typing, don't rewrite the field under the guest's fingers */
+    if (!fromInput) {
+      adultsInput.value = String(g.a);
+      childrenInput.value = String(g.c);
+    }
     updatePaxButtons();
     validateStep();
     updateTicket("pax");
@@ -588,20 +629,24 @@
     saveDraft();
   }
 
-  paxPlus.addEventListener("click", function () { setPax((state.pax || 0) + 1); });
-  paxMinus.addEventListener("click", function () { if (state.pax > 1) setPax(state.pax - 1); });
-  paxInput.addEventListener("input", function () {
-    var v = parseInt(paxInput.value, 10);
-    if (isNaN(v)) v = 0;
-    v = Math.max(0, Math.min(PAX_MAX, v));
-    state.pax = v;
-    updatePaxButtons();
-    validateStep();
-    updateTicket("pax");
-    updateOccupancyNote();
-    saveDraft();
+  adultsPlus.addEventListener("click", function () { setGuests(state.adults + 1, state.children); });
+  adultsMinus.addEventListener("click", function () { setGuests(state.adults - 1, state.children); });
+  childrenPlus.addEventListener("click", function () { setGuests(state.adults, state.children + 1); });
+  childrenMinus.addEventListener("click", function () { setGuests(state.adults, state.children - 1); });
+  adultsInput.addEventListener("input", function () {
+    var v = parseInt(adultsInput.value, 10);
+    if (isNaN(v)) return;                         /* empty while typing — wait for blur */
+    setGuests(v, state.children, true);
   });
-  paxInput.addEventListener("change", function () { setPax(state.pax); });
+  childrenInput.addEventListener("input", function () {
+    var v = parseInt(childrenInput.value, 10);
+    if (isNaN(v)) return;
+    setGuests(state.adults, v, true);
+  });
+  adultsInput.addEventListener("change", function () { setGuests(parseInt(adultsInput.value, 10), state.children); });
+  childrenInput.addEventListener("change", function () { setGuests(state.adults, parseInt(childrenInput.value, 10) || 0); });
+  adultsInput.value = String(state.adults);
+  childrenInput.value = String(state.children);
   updatePaxButtons();
 
   /* ---------- contact number: searchable country-code dropdown ---------- */
@@ -817,7 +862,7 @@
     if (!which || which === "dates") {
       var n = nights();
       if (state.arrival) {
-        setTicketRow("checkin", formatDateTime(state.arrival, state.arrivalTime), true);
+        setTicketRow("checkin", isActivity() ? formatDate(state.arrival) : formatDateTime(state.arrival, state.arrivalTime), true);
       } else {
         setTicketRow("checkin", "Select above", false);
       }
@@ -833,10 +878,10 @@
       }
     }
     if (!which || which === "pax") {
-      setTicketRow("pax", state.pax ? String(state.pax) : "—", !!state.pax);
+      setTicketRow("pax", state.pax ? paxText() : "—", !!state.pax);
     }
     if (!which || which === "room") {
-      setTicketRow("room", state.room || "Not chosen yet", !!state.room);
+      setTicketRow("room", chosenName() || "Not chosen yet", !!chosenName());
     }
     if (!which || which === "name") {
       setTicketRow("name", state.name || "—", !!state.name);
@@ -845,9 +890,7 @@
       setTicketRow("phone", state.phone || "—", !!state.phone);
     }
     if (!which || which === "total") {
-      var hasRoom = !!(state.room && state.price);
-      var total = hasRoom && nights() ? state.price * nights() : 0;
-      ticketTotalEl.textContent = hasRoom ? "$" + total.toLocaleString() + " +tax" : "—";
+      ticketTotalEl.textContent = totalText() || "—";
       popValue(ticketTotalEl);
     }
   }
@@ -869,10 +912,12 @@
   /* ---------- step validation ---------- */
   function validateStep() {
     var ok = true;
-    if (currentStep === 1) {
-      ok = !!(state.arrival && state.departure && nights() > 0 && state.pax > 0);
+    if (currentStep === 0) {
+      ok = false;
+    } else if (currentStep === 1) {
+      ok = isActivity() ? !!(state.arrival && state.pax > 0) : !!(state.arrival && state.departure && nights() > 0 && state.pax > 0);
     } else if (currentStep === 2) {
-      ok = !!state.room;
+      ok = isActivity() ? !!(curAct() && paxFitsAct(curAct())) : !!state.room;
     } else if (currentStep === 3) {
       ok = !!(state.name && emailInput.checkValidity() && isPhoneValid());
     } else if (currentStep === 4) {
@@ -920,6 +965,7 @@
        reservation-note sidebar would just repeat it — hide it there and
        on the final Send screen (05), which also repeats the same details. */
     if (bkGrid) bkGrid.classList.toggle("bk-review-active", step === TOTAL_STEPS || step === 5);
+    if (flowEl) flowEl.classList.toggle("bk-choose-active", step === 0);
   }
 
   window.addEventListener("resize", function () {
@@ -953,13 +999,14 @@
     var rows = [
       ["Name", state.name || "—"],
       ["Dates", state.arrival && state.departure ? formatDateTime(state.arrival, state.arrivalTime) + " – " + formatDateTime(state.departure, state.departureTime) + " (" + n + (n === 1 ? " night" : " nights") + ")" : "—"],
-      ["Number of pax", state.pax ? String(state.pax) : "—"],
+      ["Number of pax", state.pax ? paxText() : "—"],
       ["Room category", state.room || "—"]
     ];
     if (occupancyLabel()) rows.push(["Occupancy", occupancyLabel()]);
     rows.push(["Email", state.email || "—"]);
     rows.push(["Contact number", state.phone || "—"]);
     rows.push(["Estimated total", "$" + total.toLocaleString() + " +tax"]);
+    if (isActivity()) rows = activityRows();
     reviewList.innerHTML = rows.map(function (r) {
       return '<div class="bk-review-row"><span>' + r[0] + "</span><span>" + r[1] + "</span></div>";
     }).join("");
@@ -1111,13 +1158,25 @@
 
   function buildInquiryMessage() {
     var firstName = (state.name || "").trim().split(/\s+/)[0];
+    if (isActivity()) {
+      var actSel = curAct();
+      return [
+        "Hi! I'd like to book an activity at Dhaankolhu Rasdhoo Island." + (firstName ? " This is " + firstName + "." : ""),
+        "",
+        "Activity: " + (actSel ? actSel.n : "\u2014"),
+        "Date: " + (state.arrival ? formatFullDate(state.arrival) : "\u2014"),
+        "Number of pax: " + (state.pax ? paxText() : "\u2014"),
+        "",
+        "I've attached my booking details PDF here."
+      ].join("\n");
+    }
     var lines = [
       "Hi! I'd like to inquire about a stay at Dhaankolhu Rasdhoo Island." + (firstName ? " This is " + firstName + "." : ""),
       "",
       "Room category: " + (state.room || "\u2014")
     ];
     if (occupancyLabel()) lines.push("Occupancy: " + occupancyLabel());
-    lines.push("Number of pax: " + (state.pax || "\u2014"));
+    lines.push("Number of pax: " + (state.pax ? paxText() : "\u2014"));
     lines.push("");
     lines.push("I've attached my booking details PDF here.");
     return lines.join("\n");
@@ -1220,7 +1279,7 @@
       ["Check-in", state.arrival ? formatDateTime(state.arrival, state.arrivalTime) : "\u2014"],
       ["Check-out", state.departure ? formatDateTime(state.departure, state.departureTime) : "\u2014"],
       [n === 1 ? "Night" : "Nights", state.arrival && state.departure && n > 0 ? String(n) : "\u2014"],
-      ["Number of pax", state.pax ? String(state.pax) : "\u2014"],
+      ["Number of pax", state.pax ? paxText() : "\u2014"],
       ["Room category", state.room || "\u2014"]
     ];
     if (occupancyLabel()) rows.push(["Occupancy", occupancyLabel()]);
@@ -1228,6 +1287,7 @@
     if (state.phone) rows.push(["Contact", state.phone]);
     rows.push(["Estimated total", "$" + total.toLocaleString() + " +tax"]);
 
+    if (isActivity()) rows = activityRows();
     var labelColW = contentW * 0.34;
     var valueColW = contentW - labelColW;
     var cellPad = 10;
@@ -1350,6 +1410,224 @@
   window.addEventListener("pagehide", saveDraft);
   window.addEventListener("beforeunload", saveDraft);
 
+  /* ==========================================================================
+     Booking type: "stay" (rooms) or "activity". Same 4 steps + Send for both;
+     only the wording, the date fields and the Step 2 picker change.
+     Activity rates come from activity-data.js (single source of truth).
+     ========================================================================== */
+  var resumed = false;
+  var flowEl = document.getElementById("booking-flow");
+  var ACTS = window.DHK_ACTIVITIES || [];
+  var ACT_CATS = window.DHK_ACTIVITY_CATS || [];
+  var CAT_LABEL = { snorkel: "Snorkeling", fishing: "Fishing", evening: "Cruise & Dining", trips: "Day Trips" };
+  var CAT_PAL = { snorkel: ["#0b8c92", "#073d4a"], fishing: ["#1c5d8a", "#0c2a44"], evening: ["#e58b5a", "#4b2a5c"], trips: ["#2f9c7a", "#0f3f4a"] };
+  var actGrid = document.getElementById("bk-act-grid");
+  var actTabs = document.getElementById("bk-act-tabs");
+  var actBySlug = {};
+
+  function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
+  function slugOf(n) { return n.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+  ACTS.forEach(function (a) { actBySlug[slugOf(a.n)] = a; });
+
+  function isActivity() { return state.mode === "activity"; }
+  function curAct() { return isActivity() ? (actBySlug[state.actSlug] || null) : null; }
+  function actLimits(a) {
+    var mn = /Min\s+(\d+)/i.exec(a.note || ""), mx = /Max\s+(\d+)/i.exec(a.note || "");
+    return { min: mn ? +mn[1] : 1, max: mx ? +mx[1] : PAX_MAX };
+  }
+  function actRate(a, p) { return a.t ? a.t[p >= 3 ? 2 : (p === 2 ? 1 : 0)] : a.g; }
+  function actTotal(a, p) { return a.gl ? a.g : actRate(a, p) * p; }   /* per-hour boats are priced per hour, not per head */
+  function paxFitsAct(a) { var l = actLimits(a); return state.pax >= l.min && state.pax <= l.max; }
+  function chosenName() { var a = curAct(); return isActivity() ? (a ? a.n : "") : (state.room || ""); }
+  function rateText(a) {
+    if (a.gl) return "$" + a.g + " per hour";
+    return "$" + actRate(a, state.pax || 1) + " per person" + (a.t ? "" : " (group rate)");
+  }
+  function totalText() {
+    if (isActivity()) {
+      var a = curAct();
+      if (!a || !state.pax) return "";
+      return "$" + actTotal(a, state.pax).toLocaleString() + (a.gl ? " / hour" : "") + " +10% service";
+    }
+    var n = nights();
+    return state.room && state.price && n ? "$" + (state.price * n).toLocaleString() + " +tax" : "";
+  }
+  function formatFullDate(iso) {
+    return new Date(iso + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+  }
+  function activityRows() {
+    var a = curAct();
+    var r = [
+      ["Name", state.name || "\u2014"],
+      ["Activity", a ? a.n : "\u2014"],
+      ["Date", state.arrival ? formatFullDate(state.arrival) : "\u2014"],
+      ["Number of pax", state.pax ? paxText() : "\u2014"]
+    ];
+    if (a && state.pax) r.push(["Rate", rateText(a)]);
+    r.push(["Email", state.email || "\u2014"]);
+    if (state.phone) r.push(["Contact number", state.phone]);
+    r.push(["Estimated total", totalText() || "\u2014"]);
+    return r;
+  }
+
+  /* ---- per-mode wording / fields ---- */
+  function setText(id, t) { var el = document.getElementById(id); if (el) el.textContent = t; }
+  function setRow(field, label, visible) {
+    var row = document.querySelector('.bk-ticket-row[data-field="' + field + '"]');
+    if (!row) return;
+    if (label) row.querySelector("span:first-child").textContent = label;
+    row.style.display = visible ? "" : "none";
+  }
+  function applyMode() {
+    var act = isActivity();
+    if (flowEl) { flowEl.classList.toggle("bk-mode-activity", act); flowEl.classList.toggle("bk-mode-stay", !act); }
+    setText("bk-rail-l1", act ? "Date" : "Dates");
+    setText("bk-rail-l2", act ? "Your Activity" : "Your Stay");
+    setText("bk-s1-title", act ? "When would you like to go?" : "When are you sailing in?");
+    setText("bk-s1-sub", act ? "Pick the day you'd like to do it." : "Pick your arrival and departure dates.");
+    setText("bk-arrival-label", act ? "Activity date" : "Arrival");
+    setText("bk-pax-hint", act ? "Total number of guests joining" : "Total number of guests staying");
+    setText("bk-s2-title", act ? "Choose your activity" : "Choose your stay");
+    setText("bk-s2-sub", act ? "Pick an experience \u2014 rates update with your group size." : "Three ways to settle into the rhythm of the island. Pick the one that suits your party.");
+    setText("bk-switch-label", act ? "Booking: Activity" : "Booking: Stay");
+    setRow("checkin", act ? "Date" : "Check-in", true);
+    setRow("checkout", "", !act);
+    setRow("nights", "", !act);
+    setRow("room", act ? "Activity" : "Room category", true);
+    updateTicket();
+    updateOccupancyNote();
+    window.requestAnimationFrame(recalibrateRailIndicator);
+  }
+  function setMode(m) {
+    if (m !== "stay" && m !== "activity") return;
+    if (state.mode && state.mode !== m) maxStepReached = 1;   /* new type → re-walk the steps */
+    state.mode = m;
+    applyMode();
+    validateStep();
+    saveDraft();
+  }
+  function jumpToStep(n) {
+    var cur = form.querySelector(".bk-step.is-current");
+    var tgt = form.querySelector('.bk-step[data-step="' + n + '"]');
+    if (cur && tgt && cur !== tgt) { cur.classList.remove("is-current"); tgt.classList.add("is-current"); }
+    currentStep = n;
+    nextBtn.textContent = n === TOTAL_STEPS ? "Send via WhatsApp" : "Next";
+    if (!nextBtn.querySelector("span")) nextBtn.innerHTML = nextBtn.textContent + " <span>→</span>";
+    if (n === TOTAL_STEPS) buildReview();
+    updateRail(n);
+    validateStep();
+  }
+
+  /* ---- Step 2 (activity): category tabs + cards (same .bk-room look) ---- */
+  var CLOCK_SVG = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  var WAVE_SVG = '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 9q2.5-2 5 0t5 0 5 0 5 0M2 14q2.5-2 5 0t5 0 5 0 5 0M2 19q2.5-2 5 0t5 0 5 0 5 0"/></svg>';
+
+  function buildActivities() {
+    if (!actGrid || !actTabs || !ACTS.length) return;
+    actTabs.innerHTML = ACT_CATS.map(function (c, k) {
+      return '<button type="button" role="tab" class="bk-act-tab' + (k === 0 ? " is-active" : "") + '" data-cat="' + c.id + '" aria-selected="' + (k === 0) + '">' + esc(c.label) + "</button>";
+    }).join("");
+    actGrid.innerHTML = ACTS.map(function (a) {
+      var s = slugOf(a.n), pal = CAT_PAL[a.c] || CAT_PAL.snorkel;
+      var from = a.t ? Math.min.apply(null, a.t) : a.g;
+      return '<div class="bk-room bk-act" data-act="' + s + '" data-cat="' + a.c + '" tabindex="0" role="button" aria-pressed="false" style="--g1:' + pal[0] + ";--g2:" + pal[1] + '">' +
+        '<div class="bk-room-check">\u2713</div>' +
+        '<div class="bk-room-media"><div class="bk-room-img-wrap"><span class="bk-act-ph">' + WAVE_SVG + '</span>' +
+        '<img decoding="async" class="bk-room-photo" alt="' + esc(a.n) + '" /><span class="bk-act-cat">' + esc(CAT_LABEL[a.c] || "") + "</span></div></div>" +
+        '<div class="bk-room-body"><h3>' + esc(a.n) + "</h3>" +
+        '<p class="bk-act-meta"><span>' + CLOCK_SVG + esc(a.d) + "</span>" + (a.note ? '<span class="bk-act-limit">' + esc(a.note) + "</span>" : "") + "</p>" +
+        '<p class="bk-act-incl">' + esc(a.i.join(" \u00b7 ")) + "</p>" +
+        '<div class="bk-room-price"><span class="bk-act-lab">' + (a.t ? "From" : (a.gl ? "Per hour" : "Per person")) + '</span><strong><span class="bk-act-rate">$' + from + "</span><small>" + (a.gl ? "/hr" : "/person") + "</small></strong></div></div></div>";
+    }).join("");
+
+    /* photo: img/activities/<slug>.webp → existing site photo → gradient placeholder */
+    actGrid.querySelectorAll("img.bk-room-photo").forEach(function (im) {
+      var card = im.closest(".bk-act"), s = card.getAttribute("data-act"), a = actBySlug[s], stage = 0;
+      im.addEventListener("load", function () { im.classList.add("is-loaded"); });
+      im.addEventListener("error", function () { stage++; if (stage === 1 && a.f) im.src = a.f; else im.remove(); });
+      im.loading = "lazy";
+      im.src = "img/activities/" + s + ".webp";
+    });
+    markActSelected();
+  }
+
+  function markActSelected() {
+    if (!actGrid) return;
+    actGrid.querySelectorAll(".bk-act").forEach(function (c) {
+      var on = !!state.actSlug && c.getAttribute("data-act") === state.actSlug;
+      c.classList.toggle("is-selected", on);
+      c.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  /* rates on the cards follow the group size; cards that don't fit it are flagged */
+  function refreshActCards() {
+    if (!actGrid) return;
+    actGrid.querySelectorAll(".bk-act").forEach(function (c) {
+      var a = actBySlug[c.getAttribute("data-act")];
+      if (!a) return;
+      var lab = c.querySelector(".bk-act-lab"), rate = c.querySelector(".bk-act-rate");
+      if (a.t && state.pax) { lab.textContent = "For " + state.pax + " pax"; rate.textContent = "$" + actRate(a, state.pax); }
+      else if (a.t) { lab.textContent = "From"; rate.textContent = "$" + Math.min.apply(null, a.t); }
+      c.classList.toggle("is-unfit", !!state.pax && !paxFitsAct(a));
+    });
+  }
+
+  function updateActNote() {
+    refreshActCards();
+    if (!occupancyNote) return;
+    var a = curAct(), msg = "";
+    if (a && state.pax && !paxFitsAct(a)) {
+      var l = actLimits(a);
+      msg = state.pax < l.min
+        ? a.n + " needs at least " + l.min + " guests \u2014 you have " + state.pax + ". Go back to Step 1 to change the number of guests."
+        : a.n + " takes up to " + l.max + " guests \u2014 you have " + state.pax + ". Go back to Step 1 to change the number of guests.";
+    }
+    occupancyNote.hidden = !msg;
+    occupancyNote.textContent = msg;
+    occupancyNote.classList.toggle("is-error", !!msg);
+  }
+
+  function selectActivity(card) {
+    var already = card.classList.contains("is-selected");
+    state.actSlug = already ? "" : card.getAttribute("data-act");
+    markActSelected();
+    validateStep();
+    updateTicket("room");
+    updateTicket("total");
+    updateOccupancyNote();
+    saveDraft();
+  }
+
+  if (actGrid) {
+    actGrid.addEventListener("click", function (e) { var c = e.target.closest(".bk-act"); if (c) selectActivity(c); });
+    actGrid.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      var c = e.target.closest(".bk-act"); if (!c) return;
+      e.preventDefault(); selectActivity(c);
+    });
+  }
+  if (actTabs) {
+    actTabs.addEventListener("click", function (e) {
+      var b = e.target.closest(".bk-act-tab");
+      if (!b || b.classList.contains("is-active")) return;
+      actTabs.querySelectorAll(".bk-act-tab").forEach(function (x) { var on = x === b; x.classList.toggle("is-active", on); x.setAttribute("aria-selected", on); });
+      var cat = b.getAttribute("data-cat"), n = 0, shown = [];
+      actGrid.querySelectorAll(".bk-act").forEach(function (c) {
+        var show = cat === "all" || c.getAttribute("data-cat") === cat;
+        c.hidden = !show;
+        c.classList.remove("bk-enter");
+        if (show) { c.style.setProperty("--i", Math.min(n++, 8)); shown.push(c); }
+      });
+      void actGrid.offsetWidth;
+      shown.forEach(function (c) { c.classList.add("bk-enter"); });
+    });
+  }
+  buildActivities();
+
+  /* ---- deep links: book-now.html?type=activity&activity=<slug> | ?type=stay ---- */
+  function handleDeepLink() { /* rooms only - old ?type=activity links just open the normal stay flow */ }
+
   /* ---------- restore a saved draft (back/forward nav, reload, revisit) ---------- */
   function restoreDraft() {
     var draft = loadDraft();
@@ -1358,6 +1636,7 @@
     for (var key in draft.state) {
       if (Object.prototype.hasOwnProperty.call(state, key)) state[key] = draft.state[key];
     }
+    state.mode = "stay"; state.actSlug = "";   /* rooms only */
 
     /* dates */
     arrivalInput.value = state.arrival || "";
@@ -1385,9 +1664,16 @@
       }
     }
 
+    /* activity */
+    markActSelected();
+
     /* pax + occupancy note */
-    state.pax = Number(state.pax) || 0;
-    paxInput.value = state.pax ? String(state.pax) : "";
+    /* older drafts only stored a single pax number -> treat them all as adults */
+    if (!state.adults) { state.adults = Number(state.pax) || 2; state.children = 0; }
+    var g = clampGuests(state.adults, state.children);
+    state.adults = g.a; state.children = g.c; state.pax = g.a + g.c;
+    adultsInput.value = String(state.adults);
+    childrenInput.value = String(state.children);
     updatePaxButtons();
     updateOccupancyNote();
 
@@ -1413,21 +1699,20 @@
       updatePhoneValidity();
     }
 
-    /* step position */
+    /* step position — only resumed on back/forward/reload; a fresh visit
+       (e.g. the header "Book now") starts on the Stay / Activity chooser,
+       with the earlier answers still pre-filled */
     var savedStep = Number(draft.currentStep) || 1;
-    maxStepReached = Math.max(Number(draft.maxStepReached) || 1, savedStep);
-    if (savedStep > 1 && savedStep <= TOTAL_STEPS) {
-      var current = form.querySelector(".bk-step.is-current");
-      var target = form.querySelector('.bk-step[data-step="' + savedStep + '"]');
-      if (current && target && current !== target) {
-        current.classList.remove("is-current");
-        target.classList.add("is-current");
-      }
-      currentStep = savedStep;
-      nextBtn.textContent = savedStep === TOTAL_STEPS ? "Send via WhatsApp" : "Next";
-      if (!nextBtn.querySelector("span")) nextBtn.innerHTML = nextBtn.textContent + " <span>→</span>";
-      if (savedStep === TOTAL_STEPS) buildReview();
+    var nav = (window.performance && performance.getEntriesByType && performance.getEntriesByType("navigation")[0]) || {};
+    resumed = nav.type === "back_forward" || nav.type === "reload";
+    if (!state.mode && resumed) state.mode = "stay"; /* drafts saved before activities existed */
+    if (resumed && state.mode && savedStep >= 1 && savedStep <= TOTAL_STEPS) {
+      maxStepReached = Math.max(Number(draft.maxStepReached) || 1, savedStep);
+      jumpToStep(savedStep);
+    } else {
+      maxStepReached = 1;
     }
+    applyMode();
     updateRail(currentStep);
 
     updateTicket();
@@ -1436,6 +1721,8 @@
 
   /* initial state */
   restoreDraft();
+  applyMode();
+  handleDeepLink();
   updateTicket();
   validateStep();
   updateRail(currentStep);

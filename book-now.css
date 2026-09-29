@@ -911,6 +911,19 @@ html:not(.is-preload) .site-header .header-cta {
 .bk-time-label { font-size: .52rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-foreground); }
 .bk-time-value { font-size: .84rem; font-weight: 600; color: var(--ink); }
 .bk-field-row-pax .bk-hint { margin-top: .2rem; }
+
+/* Adults / Children — one line each: label on the left, compact stepper on
+   the right. Both rows share identical sizes so they always line up. */
+.bk-pax-rows { display: grid; gap: .5rem; }
+.bk-pax-row { display: flex; align-items: center; justify-content: space-between; gap: .8rem; min-height: 46px; padding: .3rem .4rem .3rem .9rem; border: 1px solid rgba(186,141,92,.32); border-radius: 10px; background: #fff; }
+.bk-pax-name { color: var(--ink); font-size: .82rem; font-weight: 500; line-height: 1; }
+.bk-field-row-pax .bk-pax-row .bk-pax { display: inline-flex; width: auto; flex: none; gap: .3rem; }
+.bk-field-row-pax .bk-pax-row .bk-pax-btn { width: 34px; height: 34px; border: 0; border-radius: 7px; background: #f3f0e8; font-size: .85rem; font-weight: 500; }
+@media (hover: hover) and (pointer: fine) { .bk-field-row-pax .bk-pax-row .bk-pax-btn:not(:disabled):hover { background: #e9e5d9; } }
+.bk-field .bk-pax-row .bk-pax input { flex: none; width: 46px; min-height: 0; height: 34px; padding: 0; border: 1px solid rgba(186,141,92,.45); border-radius: 7px; font-size: .82rem; font-weight: 600; text-align: center; }
+@media (max-width: 640px) {
+  .bk-field .bk-pax-row .bk-pax input { font-size: 16px; }   /* keeps iOS from zooming on focus */
+}
 /* tighter gap between the heading and the first row of fields */
 .bk-step[data-step="1"] .bk-step-head { margin-bottom: .2rem; }
 @media (max-width: 640px) {
@@ -924,3 +937,220 @@ html:not(.is-preload) .site-header .header-cta {
    side padding keeps the date exactly centered) + matching check-in/out. */
 .bk-field .bk-date-trigger { justify-content: center; text-align: center; padding: 0 2.5rem; }
 .bk-time-chip { justify-content: center; }
+
+/* ==========================================================================
+   Booking type (Stay / Activity) + activity picker
+   GPU-friendly: only opacity/transform are animated, no backdrop-filter on
+   anything new, off-screen cards skip layout/paint (content-visibility).
+   ========================================================================== */
+
+/* one flow, two modes — fields that belong to only one mode */
+.bk-mode-activity [data-only="stay"],
+.bk-mode-stay [data-only="activity"] { display: none !important; }
+
+/* chooser screen: no rail / next button until a type is picked */
+.bk-choose-active .bk-rail-outer,
+.bk-choose-active .bk-actions { display: none; }
+
+.bk-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.bk-choice {
+  position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; padding: 0; border: 0; border-radius: 16px;
+  overflow: hidden; background: #0b1517; color: #fff; text-align: left; cursor: pointer; font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .3s var(--ease-out), box-shadow .3s ease;
+}
+.bk-choice img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: opacity .38s ease, transform .8s var(--ease-out);
+}
+.bk-choice-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,25,27,.05) 30%, rgba(11,25,27,.78) 100%); pointer-events: none; }
+.bk-choice-copy { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: .25rem; padding: 1.3rem 1.2rem 1.25rem; }
+.bk-choice-copy small { font-size: .56rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.78); }
+.bk-choice-copy strong { font-family: "Playfair Display", Georgia, serif; font-size: clamp(1.35rem, 3vw, 1.7rem); font-weight: 600; letter-spacing: -.02em; }
+.bk-choice-copy em { font-style: normal; font-size: .72rem; line-height: 1.45; color: rgba(255,255,255,.85); }
+.bk-choice-go {
+  display: inline-flex; align-items: center; gap: .45rem; align-self: flex-start; margin-top: .7rem; padding: .5rem .95rem;
+  border-radius: 999px; background: var(--brass); font-size: .6rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  transition: gap .25s var(--ease-out);
+}
+.bk-choice-go b { font-weight: 700; }
+@media (hover: hover) and (pointer: fine) {
+  .bk-choice:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(17,30,34,.18); }
+  .bk-choice:hover img { transform: scale(1.06); }
+  .bk-choice:hover .bk-choice-go { gap: .7rem; }
+}
+.bk-choice:active { transform: scale(.985); }
+.bk-step[data-step="0"].is-current .bk-choice { animation: bk-rise-in .6s var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 90ms + 120ms); }
+@keyframes bk-rise-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+/* "Booking: Stay · Change" pill (left of Next) */
+.bk-switch {
+  display: inline-flex; align-items: center; gap: .55rem; margin-right: auto; padding: .55rem .95rem;
+  border: 1px solid rgba(23,35,42,.12); border-radius: 999px; background: #fff; color: var(--muted-foreground);
+  font: inherit; font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: border-color .2s ease, color .2s ease, transform .15s var(--ease-out);
+}
+.bk-switch em { font-style: normal; color: var(--brass); text-decoration: underline; text-underline-offset: 3px; }
+.bk-switch:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) { .bk-switch:hover { border-color: var(--brass); color: var(--ink); } }
+
+/* category tabs */
+.bk-act-tabs { display: flex; gap: .45rem; margin: 0 0 1rem; padding: .1rem .1rem .3rem; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.bk-act-tabs::-webkit-scrollbar { display: none; }
+.bk-act-tab {
+  flex: 0 0 auto; padding: .6rem 1.05rem; border: 1.5px solid rgba(23,35,42,.12); border-radius: 999px; background: #fff;
+  color: var(--muted-foreground); font: inherit; font-size: .68rem; font-weight: 700; white-space: nowrap; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: background-color .25s ease, color .25s ease, border-color .25s ease, transform .15s var(--ease-out);
+}
+.bk-act-tab:active { transform: scale(.96); }
+.bk-act-tab.is-active { background: var(--brass); border-color: var(--brass); color: #fff; }
+@media (hover: hover) and (pointer: fine) { .bk-act-tab:not(.is-active):hover { color: var(--ink); border-color: rgba(23,35,42,.3); } }
+
+/* activity cards reuse .bk-room (same look, same selected state) */
+.bk-act[hidden] { display: none; }
+.bk-act {
+  background: rgba(255,255,255,.94); backdrop-filter: none; -webkit-backdrop-filter: none;
+  content-visibility: auto; contain-intrinsic-size: auto 300px;
+}
+.bk-act .bk-room-img-wrap { background: linear-gradient(160deg, var(--g1, #0b8c92), var(--g2, #073d4a)); cursor: pointer; }
+.bk-act .bk-room-photo { transition: opacity .38s ease, transform .7s var(--ease-out); }
+.bk-act-ph { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.55); }
+.bk-act-cat {
+  position: absolute; top: .65rem; left: .65rem; z-index: 2; padding: .3rem .6rem; border-radius: 999px;
+  background: rgba(11,23,27,.6); color: #fff; font-size: .54rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+}
+.bk-act-meta { display: flex; flex-wrap: wrap; gap: .2rem .7rem; margin: 0 0 .45rem !important; color: var(--muted-foreground); }
+.bk-act-meta > span { display: inline-flex; align-items: center; gap: .3rem; }
+.bk-act-meta svg { flex: 0 0 auto; }
+.bk-act-limit { color: var(--brass); font-weight: 700; }
+.bk-act.is-unfit .bk-act-limit { color: var(--destructive, #a44636); }
+.bk-act-incl { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bk-act.bk-enter { animation: bk-rise-in .45s var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+
+@media (max-width: 720px) {
+  .bk-choice-grid { grid-template-columns: 1fr; }
+  .bk-choice { aspect-ratio: 16 / 10; }
+  .bk-switch { margin-right: 0; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bk-step[data-step="0"].is-current .bk-choice, .bk-act.bk-enter { animation: none; }
+  .bk-choice, .bk-choice img { transition: none; }
+}
+
+/* ==========================================================================
+   Activity picker — landscape cards that fill the screen.
+   The container grows with the viewport (instead of the fixed 68rem used for
+   rooms) and the grid auto-fits as many landscape cards per row as the width
+   allows: 1 on phones, 2 on laptops, 3-4 on big / ultrawide monitors.
+   ========================================================================== */
+.bk-flow-section.bk-mode-activity:has(.bk-step[data-step="2"].is-current) { width: min(94vw, 2400px); max-width: none; }
+.bk-mode-activity .bk-grid:has(.bk-step[data-step="2"].is-current) { max-width: none; }
+
+.bk-act-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 25rem), 1fr)); gap: clamp(1rem, 1.6vw, 1.6rem); }
+
+.bk-act { flex-direction: row; align-items: stretch; min-height: 11.5rem; contain-intrinsic-size: auto 190px; }
+.bk-act .bk-room-media { flex: 0 0 42%; max-width: 42%; align-self: stretch; }
+.bk-act .bk-room-img-wrap { position: absolute; inset: 0; aspect-ratio: auto; }
+.bk-act .bk-room-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding: 1rem 1.15rem; }
+.bk-act .bk-room-price { margin-top: auto; padding-top: .7rem; }
+.bk-act-cat { top: .55rem; left: .55rem; }
+.bk-act .bk-room-check { top: .55rem; right: .55rem; }
+
+/* bigger screens: more room inside each card, larger type */
+@media (min-width: 1600px) {
+  .bk-act { min-height: 13rem; }
+  .bk-act .bk-room-body h3 { font-size: 1.1rem; }
+  .bk-act .bk-room-body p { font-size: .76rem; }
+  .bk-act .bk-room-price strong { font-size: 1.1rem; }
+}
+@media (min-width: 2200px) {
+  .bk-act { min-height: 15rem; }
+  .bk-act .bk-room-body h3 { font-size: 1.3rem; }
+  .bk-act .bk-room-body p { font-size: .88rem; }
+}
+
+/* phones: still landscape, just a slimmer photo and tighter text */
+@media (max-width: 720px) {
+  .bk-act-grid { grid-template-columns: 1fr; gap: .8rem; }
+  .bk-act { min-height: 9.5rem; }
+  .bk-act .bk-room-media { flex-basis: 36%; max-width: 36%; }
+  .bk-act .bk-room-body { padding: .8rem .85rem; }
+  .bk-act .bk-room-body h3 { font-size: .9rem; }
+  .bk-act-cat { font-size: .48rem; padding: .25rem .5rem; }
+  .bk-act .bk-act-incl { -webkit-line-clamp: 1; }
+}
+
+
+/* ==========================================================================
+   Step 1 — landscape, evenly aligned layout
+   Stay mode (desktop):   Arrival | Departure | Adults | Children
+                          Check-in | Check-out | (hints)
+   Activity mode:         Activity date | Adults | Children
+   Every control is the same height and every column shares the same edges.
+   ========================================================================== */
+.bk-grid:has(.bk-step[data-step="1"].is-current) { max-width: 62rem; }
+.bk-step[data-step="1"] .bk-step-head { margin-bottom: 1.6rem; }
+
+.bk-s1-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: clamp(.8rem, 1.8vw, 1.25rem);
+  row-gap: 1rem;
+  align-items: start;
+}
+.bk-mode-activity .bk-s1-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bk-s1-grid .bk-field { margin-top: 0; }
+
+/* Adults / Children — one full-width stepper card, same height as the date fields */
+.bk-s1-grid .bk-pax-row {
+  display: flex; align-items: center; min-height: 46px; padding: .3rem;
+  border: 1px solid rgba(186,141,92,.32); border-radius: 10px; background: #fff;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.bk-s1-grid .bk-pax-row:focus-within { border-color: var(--brass); box-shadow: 0 0 0 3px rgba(186,141,92,.12); }
+.bk-s1-grid .bk-pax { display: flex; width: 100%; align-items: center; gap: .3rem; }
+.bk-s1-grid .bk-pax-btn { flex: none; width: 34px; height: 34px; border: 0; border-radius: 7px; background: #f3f0e8; font-size: .9rem; font-weight: 500; }
+@media (hover: hover) and (pointer: fine) { .bk-s1-grid .bk-pax-btn:not(:disabled):hover { background: #e9e5d9; } }
+.bk-s1-grid .bk-field .bk-pax-row .bk-pax input {
+  flex: 1 1 auto; width: auto; min-width: 0; height: 34px; min-height: 0; padding: 0;
+  border: 0; border-radius: 7px; background: transparent; box-shadow: none;
+  font-size: .86rem; font-weight: 600; text-align: center;
+}
+
+/* Check-in / Check-out — two equal chips, aligned under Arrival / Departure */
+.bk-s1-times { grid-column: 1 / 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(.8rem, 1.8vw, 1.25rem); }
+.bk-s1-time {
+  display: flex; align-items: center; justify-content: center; gap: .7rem; min-height: 46px; padding: 0 .9rem; min-width: 0;
+  border: 1px solid rgba(186,141,92,.32); border-radius: 10px; background: #fbf8f3; white-space: nowrap;
+}
+
+/* hints share one row so their baselines line up */
+.bk-s1-grid .bk-hint { margin: -.35rem 0 0; }
+.bk-s1-hint-times { grid-column: 1 / 3; }
+.bk-s1-hint-pax { grid-column: 3 / -1; }
+.bk-mode-activity .bk-s1-hint-pax { grid-column: 1 / -1; }
+
+/* tablet — two columns */
+@media (max-width: 860px) {
+  .bk-s1-grid, .bk-mode-activity .bk-s1-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bk-mode-activity .bk-s1-arrival { grid-column: 1 / -1; }
+  .bk-s1-times, .bk-s1-hint-times, .bk-s1-hint-pax, .bk-mode-activity .bk-s1-hint-pax { grid-column: 1 / -1; }
+}
+/* phone — dates stack, guests stay side by side */
+@media (max-width: 520px) {
+  .bk-s1-arrival, .bk-s1-departure { grid-column: 1 / -1; }
+  .bk-s1-time { padding: 0 .6rem; gap: .5rem; }
+  .bk-s1-grid .bk-field .bk-pax-row .bk-pax input { font-size: 16px; }
+}
+
+
+/* Calendar — range highlight (arrival → departure) shown as one continuous pill */
+.bk-cal { width: 19.5rem; }
+.bk-cal-weekdays span { font-size: .66rem; }
+.bk-cal-grid { column-gap: 0; row-gap: 3px; }
+.bk-cal-day.is-range { background: #ecebe5; border-radius: 0; color: var(--ink); }
+.bk-cal-day.is-range:nth-child(7n+1) { border-radius: 999px 0 0 999px; }
+.bk-cal-day.is-range:nth-child(7n) { border-radius: 0 999px 999px 0; }
+.bk-cal-day.is-range-start { border-radius: 999px 0 0 999px; }
+.bk-cal-day.is-range-end { border-radius: 0 999px 999px 0; }
+.bk-cal-day.is-range-start:nth-child(7n), .bk-cal-day.is-range-end:nth-child(7n+1) { border-radius: 999px; }

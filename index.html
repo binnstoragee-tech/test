@@ -888,8 +888,25 @@ try { if (location.hash === "#about") { window.__initialHash = "#about"; documen
     html.about-hold .story-panel-about .leaf-sway img { animation-play-state: paused !important; }
 
     @media (max-width: 640px) {
-      .about-birds { width: clamp(100px, 32vw, 160px); top: 11%; }
+      /* Phones: the text block sits mid-panel, so the old small/high birds (top 11%) flew ABOVE it
+         and never crossed it. Bigger birds, centred on the headline line, nearly level flight,
+         and a LINEAR text wipe timed to the bird's tail (bird is linear too) so the text is
+         revealed exactly as the birds pass — same look as desktop. */
+      .about-birds { width: 42vw; top: calc(40% - 23vw); }
       .about-leaf { width: clamp(120px, 38vw, 200px); }
+      .story-panel-about.is-active .about-birds { animation: birdsFlyMobile 1.8s linear .15s forwards; }
+      .story-panel-about.is-active .story-panel-inner { animation: aboutTextWipeMobile 1.03s linear .62s forwards; }
+      @keyframes birdsFlyMobile {
+        0%   { opacity: 0; transform: translate3d(-125%, 2vh, 0); }
+        7%   { opacity: 1; }
+        93%  { opacity: 1; }
+        100% { opacity: 0; transform: translate3d(calc(100vw + 20%), -2vh, 0); }
+      }
+      @keyframes aboutTextWipeMobile {
+        0%   { opacity: 0; clip-path: inset(-14px 100% -14px -14px); }
+        4%   { opacity: 1; }
+        100% { opacity: 1; clip-path: inset(-14px -14px -14px -14px); }
+      }
     }
     @media (prefers-reduced-motion: reduce) {
       .story-panel-about .story-panel-inner { opacity: 1; }
@@ -1889,6 +1906,7 @@ try { if (location.hash === "#about") { window.__initialHash = "#about"; documen
       }, { passive: true });
     })();
   </script>
+  <script src="activity-data.js"></script>
   <script src="activity-rates.js"></script>
   <script src="smooth-ux.js" defer></script>
 </body>

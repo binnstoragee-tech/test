@@ -95,11 +95,11 @@
             <div class="bk-rail-indicator" aria-hidden="true"></div>
             <button class="bk-rail-step is-active" data-step="1" type="button" disabled>
               <svg class="bk-rail-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 3V6.2M16 3V6.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-              <span class="bk-rail-label">Dates</span>
+              <span class="bk-rail-label" id="bk-rail-l1">Dates</span>
             </button>
             <button class="bk-rail-step" data-step="2" type="button" disabled>
               <svg class="bk-rail-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 19V7.5C3.5 6.67 4.17 6 5 6H10.5C11.33 6 12 6.67 12 7.5V13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 13H19C19.83 13 20.5 13.67 20.5 14.5V19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 19H21.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="6.75" cy="9.25" r="1.35" stroke="currentColor" stroke-width="1.5"/></svg>
-              <span class="bk-rail-label">Your Stay</span>
+              <span class="bk-rail-label" id="bk-rail-l2">Your Stay</span>
             </button>
             <button class="bk-rail-step" data-step="3" type="button" disabled>
               <svg class="bk-rail-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8.3" r="3.3" stroke="currentColor" stroke-width="1.7"/><path d="M4.5 20c0-3.87 3.36-6.5 7.5-6.5s7.5 2.63 7.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
@@ -123,12 +123,12 @@
               <!-- Step 1 — Dates & Party -->
               <div class="bk-step is-current" data-step="1">
                 <div class="bk-step-head">
-                  <h2>When are you sailing in?</h2>
-                  <p>Pick your arrival and departure dates.</p>
+                  <h2 id="bk-s1-title">When are you sailing in?</h2>
+                  <p id="bk-s1-sub">Pick your arrival and departure dates.</p>
                 </div>
-                <div class="bk-field-row">
-                  <div class="bk-field">
-                    <label for="bk-arrival-trigger">Arrival</label>
+                <div class="bk-s1-grid">
+                  <div class="bk-field bk-s1-arrival">
+                    <label for="bk-arrival-trigger" id="bk-arrival-label">Arrival</label>
                     <div class="bk-date-field">
                       <svg class="bk-date-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 3V6.2M16 3V6.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                       <button type="button" class="bk-date-trigger" id="bk-arrival-trigger" data-empty="true" aria-haspopup="dialog" aria-expanded="false">dd/mm/yyyy</button>
@@ -136,7 +136,7 @@
                     </div>
                     <input type="hidden" id="bk-arrival-time" name="arrivalTime" value="13:00" />
                   </div>
-                  <div class="bk-field">
+                  <div class="bk-field bk-s1-departure" data-only="stay">
                     <label for="bk-departure-trigger">Departure</label>
                     <div class="bk-date-field">
                       <svg class="bk-date-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 3V6.2M16 3V6.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -144,42 +144,57 @@
                       <input type="hidden" id="bk-departure" name="departure" required />
                     </div>
                     <input type="hidden" id="bk-departure-time" name="departureTime" value="12:00" />
+                    <span class="bk-hint bk-s1-hint-times" data-only="stay">Standard times for all rooms</span>
                   </div>
-                </div>
-                <div class="bk-field-row bk-field-row-pax">
-                  <div class="bk-field">
-                    <label for="bk-pax">Number of pax</label>
-                    <div class="bk-pax">
-                      <button type="button" class="bk-pax-btn" id="bk-pax-minus" aria-label="Fewer guests">&minus;</button>
-                      <input type="number" id="bk-pax" name="pax" min="1" max="10" step="1" inputmode="numeric" placeholder="&mdash;" />
-                      <button type="button" class="bk-pax-btn" id="bk-pax-plus" aria-label="More guests">+</button>
-                    </div>
-                    <span class="bk-hint">Total number of guests staying</span>
-                  </div>
-                  <div class="bk-field bk-times-field">
-                    <label>Check-in / Check-out</label>
-                    <div class="bk-times">
-                      <div class="bk-time-chip">
-                        <svg class="bk-time-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span class="bk-time-text"><span class="bk-time-label">Check-in</span><span class="bk-time-value">1:00 PM</span></span>
-                      </div>
-                      <div class="bk-time-chip">
-                        <svg class="bk-time-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span class="bk-time-text"><span class="bk-time-label">Check-out</span><span class="bk-time-value">12:00 PM</span></span>
+                  <div class="bk-field bk-s1-adults">
+                    <label for="bk-adults">Adults</label>
+                    <div class="bk-pax-row">
+                      <div class="bk-pax">
+                        <button type="button" class="bk-pax-btn" id="bk-adults-minus" aria-label="Fewer adults">&minus;</button>
+                        <input type="number" id="bk-adults" name="adults" min="1" max="10" step="1" inputmode="numeric" value="2" aria-label="Number of adults" />
+                        <button type="button" class="bk-pax-btn" id="bk-adults-plus" aria-label="More adults">+</button>
                       </div>
                     </div>
-                    <span class="bk-hint">Standard times for all rooms</span>
                   </div>
+                  <div class="bk-field bk-s1-children">
+                    <label for="bk-children">Children</label>    
+                    <div class="bk-pax-row">
+                      <div class="bk-pax">
+                        
+                        <button type="button" class="bk-pax-btn" id="bk-children-minus" aria-label="Fewer children">&minus;</button>
+                        <input type="number" id="bk-children" name="children" min="0" max="9" step="1" inputmode="numeric" value="0" aria-label="Number of children" />
+                        <button type="button" class="bk-pax-btn" id="bk-children-plus" aria-label="More children">+</button>
+
+                        
+                      </div>
+                    </div>
+                  </div>
+                  <span class="bk-hint bk-s1-hint-pax" id="bk-pax-hint">Total number of guests staying</span>
+                  <div class="bk-s1-times" data-only="stay">
+                    <div class="bk-s1-time">
+                      <svg class="bk-time-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      
+                      <span class="bk-time-text"><span class="bk-time-label">Check-in</span><span class="bk-time-value">1:00 PM</span></span>
+                    
+                    </div>
+                    <div class="bk-s1-time">
+                      <svg class="bk-time-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <span class="bk-time-text"><span class="bk-time-label">Check-out</span><span class="bk-time-value">12:00 PM</span></span>       
+                    </div>
+              
+                  </div>
+                
+                 
                 </div>
               </div>
 
               <!-- Step 2 — Choose Your Stay -->
               <div class="bk-step" data-step="2">
                 <div class="bk-step-head">
-                  <h2>Choose your stay</h2>
-                  <p>Three ways to settle into the rhythm of the island. Pick the one that suits your party.</p>
+                  <h2 id="bk-s2-title">Choose your stay</h2>
+                  <p id="bk-s2-sub">Three ways to settle into the rhythm of the island. Pick the one that suits your party.</p>
                 </div>
-                <div class="bk-room-grid" id="bk-room-grid">
+                <div class="bk-room-grid" id="bk-room-grid" data-only="stay">
                   <div class="bk-room" data-room="Double Room" data-price="65" tabindex="0" role="button" aria-pressed="false">
                     <div class="bk-room-check">✓</div>
                     <div class="bk-room-media">
